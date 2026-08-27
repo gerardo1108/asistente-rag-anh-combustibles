@@ -1,0 +1,8 @@
+langchain>=0.1.0
+langchain-community
+langchain-openai
+chromadb
+pypdf
+streamlit
+python-dotenv
+ragas
