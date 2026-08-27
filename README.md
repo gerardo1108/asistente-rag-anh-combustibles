@@ -7,9 +7,9 @@ Este proyecto desarrolla un prototipo funcional de asistente conversacional inte
 
 ## 👥 Integrantes del Equipo (Grupo 3011H)
 * **Cruz García, Johari Maharai**
-* **Quintero Sandoval, Gerardo**
-* **Carrasco Castilla, Carlos Alberto**
 * **Pardo Salinas, Helmuth Alberto**
+* **Quintero Sandoval, Gerardo**
+
 
 ---
 
