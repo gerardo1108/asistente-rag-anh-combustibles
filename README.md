@@ -1,4 +1,4 @@
-# Asistente Conversacional basado en RAG para la Orientación Normada en el Registro de Combustible Líquido fuera de Tanque (ANH)
+# Asistente conversacional basado en arquitectura RAG para la ción normativa ante la ANHorienta
 
 ## 📌 Descripción del Proyecto
 Este proyecto desarrolla un prototipo funcional de asistente conversacional inteligente basado en arquitectura **Retrieval-Augmented Generation (RAG)** y **Function Calling** (Agentes). Su objetivo es orientar a los ciudadanos en el trámite de registro para la compra de combustible líquido fuera de tanque ante la **Agencia Nacional de Hidrocarburos (ANH)** de Bolivia, mitigando errores de llenado y reduciendo alucinaciones mediante la inyección estricta del corpus normativo vigente (Decreto Supremo N° 5400 y Resoluciones Administrativas).
