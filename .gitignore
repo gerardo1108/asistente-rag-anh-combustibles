@@ -1,6 +1,7 @@
 # Byte-compiled / optimized / DLL files
 .DS_Store
 data/solicitudes_demo.json
+docs/guia_codigo.md
 __pycache__/
 *.py[codz]
 *$py.class
