@@ -1,0 +1,44 @@
+[
+  {
+    "id": "ds5400-formulario-electronico",
+    "source": "Decreto Supremo N. 5400",
+    "section": "Formulario electronico",
+    "text": "El consumo de gasolina y/o diesel en bidones, tambores u otros envases aptos se gestiona mediante un formulario electronico. El solicitante debe registrar informacion que justifique el uso declarado del combustible y completar el procedimiento habilitado para tal fin."
+  },
+  {
+    "id": "reglamento-anh-registro",
+    "source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025",
+    "section": "Registro de consumidores",
+    "text": "El registro de consumidores de combustibles liquidos en bidones, tambores u otros envases aptos requiere identificar al interesado, declarar la actividad para la cual se utilizara el combustible, registrar el destino de uso y adjuntar la documentacion o fotografia requerida por el procedimiento."
+  },
+  {
+    "id": "reglamento-anh-fotografia",
+    "source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025",
+    "section": "Fotografia del interesado",
+    "text": "Dentro del flujo de registro se contempla la carga de una fotografia del interesado junto con su documento de identidad. La imagen debe permitir verificar la presencia simultanea del rostro y del documento para continuar con la solicitud."
+  },
+  {
+    "id": "reglamento-anh-estados",
+    "source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025",
+    "section": "Estados de solicitud",
+    "text": "Una solicitud registrada puede encontrarse en estado pendiente, aprobada o rechazada. Si la solicitud es aprobada, el interesado puede continuar con las acciones habilitadas por la entidad. Si es rechazada, debe revisar la observacion y volver a presentar la informacion corregida."
+  },
+  {
+    "id": "agetic-ciudadania-digital",
+    "source": "Lineamientos AGETIC RA-0027-2026",
+    "section": "Ciudadania Digital",
+    "text": "Ciudadania Digital es el mecanismo de identificacion utilizado para acceder a servicios digitales del Estado. En el prototipo, la verificacion del Carnet de Identidad se simula porque no se dispone de acceso a la API oficial."
+  },
+  {
+    "id": "alcance-responsabilidad",
+    "source": "Delimitacion academica del prototipo",
+    "section": "Responsabilidad normativa",
+    "text": "Las respuestas del asistente tienen caracter orientativo y deben estar sustentadas en el corpus normativo disponible. El prototipo no sustituye la interpretacion oficial de la ANH ni emite decisiones administrativas reales."
+  },
+  {
+    "id": "limites-volumen-prototipo",
+    "source": "Reglas de negocio del prototipo",
+    "section": "Validacion de volumen",
+    "text": "Para efectos del prototipo, el volumen maximo permitido se valida con dos reglas: hasta 120 litros para zona nacional y hasta 50 litros para zona fronteriza. Si el volumen declarado excede el limite aplicable, el asistente debe pedir correccion antes de registrar la solicitud."
+  }
+]

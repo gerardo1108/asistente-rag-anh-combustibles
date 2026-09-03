@@ -1,4 +1,6 @@
 # Byte-compiled / optimized / DLL files
+.DS_Store
+data/solicitudes_demo.json
 __pycache__/
 *.py[codz]
 *$py.class

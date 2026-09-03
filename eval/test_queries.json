@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Que necesito para registrarme como consumidor de combustible en bidon?",
+    "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
+  },
+  {
+    "query": "Tengo que subir una foto con mi carnet?",
+    "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
+  },
+  {
+    "query": "Para que sirve Ciudadania Digital en este tramite?",
+    "expected_source": "Lineamientos AGETIC RA-0027-2026"
+  },
+  {
+    "query": "Que pasa si mi solicitud fue rechazada?",
+    "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
+  },
+  {
+    "query": "Cuantos litros puedo declarar en zona fronteriza?",
+    "expected_source": "Reglas de negocio del prototipo"
+  }
+]
