@@ -72,8 +72,31 @@ El prototipo se organiza en cinco capas ejecutadas en un entorno controlado de p
 
 5. **Abrir el navegador en:**
    ```text
-   http://127.0.0.1:8000
+   http://127.0.0.1:8001
    ```
+
+---
+
+## Servicio local en macOS
+Para evitar ejecutar comandos manualmente despues de reiniciar el equipo, el
+repositorio incluye una configuracion de `launchd`:
+
+* `scripts/start_local_server.sh`: inicia el prototipo desde la raiz del repo.
+* `infra/launchd/com.asistente-rag-anh.prototipo.plist`: define el servicio de macOS.
+
+Una vez instalado en `~/Library/LaunchAgents`, el servidor se inicia
+automaticamente al iniciar sesion y queda disponible en:
+
+```text
+http://127.0.0.1:8001
+```
+
+Los logs locales quedan en:
+
+```text
+/tmp/asistente-rag-anh-prototipo.out.log
+/tmp/asistente-rag-anh-prototipo.err.log
+```
 
 ---
 

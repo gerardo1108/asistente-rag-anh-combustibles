@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.asistente-rag-anh.prototipo</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/gerardoqinterosandoval/Library/Application Support/asistente-rag-anh/start_local_server.sh</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/gerardoqinterosandoval/Documents/asistente-rag-anh-combustibles/repo-prototipo</string>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PYTHONUNBUFFERED</key>
+    <string>1</string>
+    <key>APP_HOST</key>
+    <string>127.0.0.1</string>
+    <key>APP_PORT</key>
+    <string>8001</string>
+  </dict>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/asistente-rag-anh-prototipo.out.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/tmp/asistente-rag-anh-prototipo.err.log</string>
+</dict>
+</plist>

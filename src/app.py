@@ -1,5 +1,6 @@
 import html
 import json
+import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs
@@ -279,11 +280,16 @@ def render_chat_history() -> str:
 def main():
     """Inicia el servidor local del prototipo."""
 
+    # Permite cambiar el host y puerto sin editar codigo. Esto es util cuando
+    # el servidor se ejecuta como servicio local de macOS.
+    host = os.environ.get("APP_HOST", "127.0.0.1")
+    port = int(os.environ.get("APP_PORT", "8001"))
+
     # ThreadingHTTPServer permite atender varias peticiones sencillas durante la demo.
-    server = ThreadingHTTPServer(("127.0.0.1", 8000), Handler)
+    server = ThreadingHTTPServer((host, port), Handler)
 
     # Mensaje para que el equipo sepa que URL abrir.
-    print("Prototipo disponible en http://127.0.0.1:8000")
+    print(f"Prototipo disponible en http://{host}:{port}")
 
     # Mantiene el servidor escuchando hasta que se interrumpa con Ctrl+C.
     server.serve_forever()
