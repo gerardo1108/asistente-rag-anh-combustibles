@@ -50,43 +50,164 @@ El prototipo se organiza en cinco capas ejecutadas en un entorno controlado de p
 
 ### Prerrequisitos
 * Python 3.10 o superior.
+* Git instalado para clonar el repositorio.
 * No se requiere clave de API para ejecutar el MVP actual.
 
-### Pasos para ejecutar localmente
+El prototipo usa solo librerias estandar de Python, por lo que puede ejecutarse
+en Windows, macOS o Linux sin instalar dependencias adicionales.
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/gerardo1108/asistente-rag-anh-combustibles.git
-   cd asistente-rag-anh-combustibles
-   ```
-
-2. **Opcional: crear y activar un entorno virtual:**
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate
-   source venv/bin/activate
-   ```
-
-3. **Verificar el corpus disponible:**
-   ```bash
-   python src/ingest.py
-   ```
-
-4. **Ejecutar la interfaz web local:**
-   ```bash
-   python src/app.py
-   ```
-
-5. **Abrir el navegador en:**
-   ```text
-   http://127.0.0.1:8001
-   ```
-
-Por defecto la interfaz usa el motor hibrido. Para comparar con el recuperador lexico original:
+### 1. Clonar el repositorio
 
 ```bash
-RAG_MODE=lexical python src/app.py
-RAG_MODE=hybrid python src/app.py
+git clone https://github.com/gerardo1108/asistente-rag-anh-combustibles.git
+cd asistente-rag-anh-combustibles
+```
+
+### 2. Crear entorno virtual opcional
+
+#### Windows PowerShell
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+Si PowerShell bloquea la activacion del entorno virtual, ejecutar una vez:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+#### Windows CMD
+
+```bat
+python -m venv venv
+venv\Scripts\activate.bat
+```
+
+#### macOS o Linux
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. Verificar el corpus disponible
+
+#### Windows
+
+```powershell
+python src/ingest.py
+```
+
+#### macOS o Linux
+
+```bash
+python3 src/ingest.py
+```
+
+### 4. Ejecutar la interfaz web local
+
+#### Windows
+
+```powershell
+python src/app.py
+```
+
+#### macOS o Linux
+
+```bash
+python3 src/app.py
+```
+
+### 5. Abrir el navegador
+
+```text
+http://127.0.0.1:8001
+```
+
+Si el puerto `8001` esta ocupado, se puede usar otro puerto.
+
+#### Windows PowerShell
+
+```powershell
+$env:APP_PORT="8002"
+python src/app.py
+```
+
+#### macOS o Linux
+
+```bash
+APP_PORT=8002 python3 src/app.py
+```
+
+Luego abrir:
+
+```text
+http://127.0.0.1:8002
+```
+
+### Modo del recuperador RAG
+
+Por defecto la interfaz usa el motor hibrido. Para comparar con el recuperador
+lexico original:
+
+#### Windows PowerShell
+
+```powershell
+$env:RAG_MODE="lexical"
+python src/app.py
+
+$env:RAG_MODE="hybrid"
+python src/app.py
+```
+
+#### macOS o Linux
+
+```bash
+RAG_MODE=lexical python3 src/app.py
+RAG_MODE=hybrid python3 src/app.py
+```
+
+### Prueba rapida de funcionamiento
+
+En el chat del navegador se puede ejecutar este flujo:
+
+```text
+iniciar registro
+1234567
+Agricultura
+nacional
+gasolina
+20
+Bomba de agua
+foto ok
+si
+```
+
+Tambien se pueden probar preguntas normativas:
+
+```text
+Que necesito para registrarme como consumidor de combustible en bidon?
+Tengo que subir una foto con mi carnet?
+Cuantos litros puedo declarar en zona fronteriza?
+La respuesta del asistente reemplaza una decision oficial de la ANH?
+```
+
+### Validar desde terminal
+
+#### Windows
+
+```powershell
+python eval/evaluate_rag.py --mode both
+python -m unittest discover -s tests
+```
+
+#### macOS o Linux
+
+```bash
+python3 eval/evaluate_rag.py --mode both
+python3 -m unittest discover -s tests
 ```
 
 ---
