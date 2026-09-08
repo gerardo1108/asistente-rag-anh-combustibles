@@ -383,10 +383,10 @@ def render_metrics() -> str:
 def main():
     """Inicia el servidor local del prototipo."""
 
-    # Permite cambiar el host y puerto sin editar codigo. Esto es util cuando
-    # el servidor se ejecuta como servicio local de macOS.
+    # Permite cambiar host y puerto sin editar codigo. `APP_PORT` se usa en
+    # desarrollo local; `PORT` es el nombre esperado por Cloud Run.
     host = os.environ.get("APP_HOST", "127.0.0.1")
-    port = int(os.environ.get("APP_PORT", "8001"))
+    port = int(os.environ.get("APP_PORT") or os.environ.get("PORT", "8001"))
 
     # ThreadingHTTPServer permite atender varias peticiones sencillas durante la demo.
     server = ThreadingHTTPServer((host, port), Handler)

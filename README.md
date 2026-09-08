@@ -28,6 +28,8 @@ Esta version inicial implementa un MVP ejecutable sin dependencias externas, pen
    entradas invalidas y prevencion de errores antes de crear solicitudes.
 9. Interfaz de demostracion con indicadores del prototipo, fuentes recuperadas
    y mensajes visuales de validacion.
+10. Preparacion para despliegue futuro en Google Cloud Run mediante Docker, sin
+    desplegar todavia en nube.
 
 La capa RAG actual conserva el recuperador lexico offline y agrega un modo hibrido/vectorial local basado en TF-IDF y similitud coseno. Esto permite demostrar la transicion hacia recuperacion vectorial sin depender todavia de API externa o servicios instalados. El siguiente paso tecnico es reemplazar el vectorizador local por embeddings persistidos en `ChromaDB` o `FAISS`, manteniendo las mismas interfaces.
 
@@ -275,6 +277,12 @@ La validacion formal del prototipo esta documentada en:
 
 ```text
 docs/validacion_prototipo.md
+```
+
+La guia de despliegue planeado en Google Cloud Run esta documentada en:
+
+```text
+docs/despliegue_google_cloud.md
 ```
 
 ### Pruebas funcionales del flujo
