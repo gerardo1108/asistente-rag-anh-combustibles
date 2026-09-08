@@ -1,22 +1,86 @@
 [
   {
+    "id": "registro-requisitos-bidon",
+    "category": "requisitos",
     "query": "Que necesito para registrarme como consumidor de combustible en bidon?",
+    "expected_chunk_id": "reglamento-anh-registro",
     "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
   },
   {
+    "id": "registro-foto-carnet",
+    "category": "documentacion",
     "query": "Tengo que subir una foto con mi carnet?",
+    "expected_chunk_id": "reglamento-anh-fotografia",
     "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
   },
   {
+    "id": "ciudadania-digital",
+    "category": "identidad",
     "query": "Para que sirve Ciudadania Digital en este tramite?",
+    "expected_chunk_id": "agetic-ciudadania-digital",
     "expected_source": "Lineamientos AGETIC RA-0027-2026"
   },
   {
+    "id": "estado-rechazada",
+    "category": "seguimiento",
     "query": "Que pasa si mi solicitud fue rechazada?",
+    "expected_chunk_id": "reglamento-anh-estados",
     "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
   },
   {
+    "id": "limite-fronterizo",
+    "category": "validacion",
     "query": "Cuantos litros puedo declarar en zona fronteriza?",
+    "expected_chunk_id": "limites-volumen-prototipo",
     "expected_source": "Reglas de negocio del prototipo"
+  },
+  {
+    "id": "formulario-electronico",
+    "category": "tramite",
+    "query": "El tramite se hace con formulario electronico?",
+    "expected_chunk_id": "ds5400-formulario-electronico",
+    "expected_source": "Decreto Supremo N. 5400"
+  },
+  {
+    "id": "envases-aptos",
+    "category": "tramite",
+    "query": "Puedo declarar combustible en tambores u otros envases?",
+    "expected_chunk_id": "ds5400-formulario-electronico",
+    "expected_source": "Decreto Supremo N. 5400"
+  },
+  {
+    "id": "destino-uso",
+    "category": "requisitos",
+    "query": "Debo indicar para que actividad y destino usare el combustible?",
+    "expected_chunk_id": "reglamento-anh-registro",
+    "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
+  },
+  {
+    "id": "estado-aprobada",
+    "category": "seguimiento",
+    "query": "Que significa que una solicitud este aprobada?",
+    "expected_chunk_id": "reglamento-anh-estados",
+    "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
+  },
+  {
+    "id": "responsabilidad-normativa",
+    "category": "seguridad",
+    "query": "La respuesta del asistente reemplaza una decision oficial de la ANH?",
+    "expected_chunk_id": "alcance-responsabilidad",
+    "expected_source": "Delimitacion academica del prototipo"
+  },
+  {
+    "id": "limite-nacional",
+    "category": "validacion",
+    "query": "Cual es el maximo permitido para zona nacional en el prototipo?",
+    "expected_chunk_id": "limites-volumen-prototipo",
+    "expected_source": "Reglas de negocio del prototipo"
+  },
+  {
+    "id": "api-oficial-simulada",
+    "category": "integracion",
+    "query": "El prototipo consulta la API oficial de Ciudadania Digital?",
+    "expected_chunk_id": "agetic-ciudadania-digital",
+    "expected_source": "Lineamientos AGETIC RA-0027-2026"
   }
 ]

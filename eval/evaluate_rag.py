@@ -1,6 +1,7 @@
 import argparse
 import json
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 # Raiz del repositorio: permite ejecutar este script desde cualquier ubicacion.
@@ -18,12 +19,13 @@ ENGINES = {
 }
 
 
-def evaluate(mode: str) -> float:
-    """Ejecuta una evaluacion top-3 del recuperador RAG.
+def evaluate(mode: str) -> dict:
+    """Ejecuta una evaluacion trazable del recuperador RAG.
 
-    La prueba verifica si la fuente esperada aparece entre los tres primeros
-    fragmentos recuperados. Esta metrica corresponde al criterio de recuperacion
-    trazable definido para el MVP.
+    La prueba verifica si el fragmento esperado aparece en el primer resultado
+    y entre los tres primeros fragmentos recuperados. Tambien calcula MRR
+    (Mean Reciprocal Rank), una metrica util para explicar que tan arriba queda
+    la evidencia correcta dentro del ranking.
     """
 
     # Instancia el recuperador con el corpus curado.
@@ -32,8 +34,13 @@ def evaluate(mode: str) -> float:
     # Carga las consultas de prueba y su fuente esperada.
     tests = json.loads((ROOT / "eval" / "test_queries.json").read_text(encoding="utf-8"))
 
-    # Contador de casos exitosos.
-    hits = 0
+    # Contadores de metricas agregadas.
+    top1_hits = 0
+    top3_hits = 0
+    reciprocal_ranks = []
+    category_stats = defaultdict(lambda: {"total": 0, "top3_hits": 0})
+    cases = []
+
     print(f"Evaluacion RAG - modo {mode}")
     print("=" * 40)
 
@@ -42,24 +49,70 @@ def evaluate(mode: str) -> float:
         # Recupera hasta tres fragmentos candidatos.
         results = rag.retrieve(test["query"], top_k=3)
 
-        # Extrae solo los nombres de fuente para compararlos con el esperado.
+        # Extrae ids y fuentes para compararlos con la evidencia esperada.
+        chunk_ids = [result.chunk.id for result in results]
         sources = [result.chunk.source for result in results]
+        expected_chunk_id = test["expected_chunk_id"]
 
-        # El caso es correcto si la fuente esperada aparece en el top-3.
-        ok = test["expected_source"] in sources
-        hits += int(ok)
+        # Calcula ranking de la evidencia esperada. Si no aparece, rank queda en None.
+        rank = chunk_ids.index(expected_chunk_id) + 1 if expected_chunk_id in chunk_ids else None
+        top1_ok = rank == 1
+        top3_ok = rank is not None and rank <= 3
+        reciprocal_rank = 1 / rank if rank else 0.0
+
+        top1_hits += int(top1_ok)
+        top3_hits += int(top3_ok)
+        reciprocal_ranks.append(reciprocal_rank)
+
+        category = test.get("category", "sin_categoria")
+        category_stats[category]["total"] += 1
+        category_stats[category]["top3_hits"] += int(top3_ok)
+
+        cases.append(
+            {
+                "id": test["id"],
+                "category": category,
+                "query": test["query"],
+                "expected_chunk_id": expected_chunk_id,
+                "expected_source": test["expected_source"],
+                "retrieved_chunk_ids": chunk_ids,
+                "retrieved_sources": sources,
+                "rank": rank,
+                "top1_ok": top1_ok,
+                "top3_ok": top3_ok,
+            }
+        )
 
         # Imprime evidencia legible para anexar o mostrar en la demo.
+        print(f"Caso: {test['id']} [{category}]")
         print(f"Consulta: {test['query']}")
-        print(f"Esperado: {test['expected_source']}")
+        print(f"Fragmento esperado: {expected_chunk_id}")
+        print(f"Fuente esperada: {test['expected_source']}")
+        print(f"Fragmentos recuperados: {chunk_ids}")
         print(f"Recuperado: {sources}")
-        print(f"Resultado: {'OK' if ok else 'FALLO'}")
+        print(f"Rank esperado: {rank if rank else 'no recuperado'}")
+        print(f"Resultado top-3: {'OK' if top3_ok else 'FALLO'}")
         print("-" * 40)
 
-    # Calcula la precision agregada del set de prueba.
-    accuracy = hits / len(tests) if tests else 0.0
-    print(f"Precision top-3: {accuracy:.0%} ({hits}/{len(tests)})")
-    return accuracy
+    # Calcula metricas agregadas del set de prueba.
+    total = len(tests)
+    metrics = {
+        "mode": mode,
+        "total_cases": total,
+        "top1_accuracy": top1_hits / total if total else 0.0,
+        "top3_accuracy": top3_hits / total if total else 0.0,
+        "mean_reciprocal_rank": sum(reciprocal_ranks) / total if total else 0.0,
+        "category_top3_accuracy": {
+            category: values["top3_hits"] / values["total"]
+            for category, values in sorted(category_stats.items())
+        },
+        "cases": cases,
+    }
+
+    print(f"Precision top-1: {metrics['top1_accuracy']:.0%} ({top1_hits}/{total})")
+    print(f"Precision top-3: {metrics['top3_accuracy']:.0%} ({top3_hits}/{total})")
+    print(f"MRR: {metrics['mean_reciprocal_rank']:.2f}")
+    return metrics
 
 
 def main() -> None:
@@ -72,13 +125,24 @@ def main() -> None:
         default="hybrid",
         help="Motor a evaluar. Usa 'both' para comparar lexico e hibrido.",
     )
+    parser.add_argument(
+        "--report",
+        default="",
+        help="Ruta opcional para guardar un reporte JSON con resultados detallados.",
+    )
     args = parser.parse_args()
 
     modes = ["lexical", "hybrid"] if args.mode == "both" else [args.mode]
-    accuracies = [evaluate(mode) for mode in modes]
+    reports = [evaluate(mode) for mode in modes]
+
+    if args.report:
+        report_path = Path(args.report)
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(reports, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(f"Reporte guardado en: {report_path}")
 
     # Falla el script si no se cumple el umbral academico definido en el proyecto.
-    if any(accuracy < 0.8 for accuracy in accuracies):
+    if any(report["top3_accuracy"] < 0.8 for report in reports):
         raise SystemExit(1)
 
 

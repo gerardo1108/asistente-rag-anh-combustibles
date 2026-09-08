@@ -22,7 +22,8 @@ Esta version inicial implementa un MVP ejecutable sin dependencias externas, pen
 4. Validacion determinista del volumen declarado segun zona nacional o fronteriza.
 5. Consulta de estado de tramite.
 6. Panel evaluador ANH simulado para aprobar, rechazar o dejar pendiente una solicitud.
-7. Evaluacion tecnica inicial del recuperador con un set de preguntas controladas.
+7. Evaluacion tecnica del recuperador con preguntas controladas, metricas top-1,
+   top-3 y MRR.
 
 La capa RAG actual conserva el recuperador lexico offline y agrega un modo hibrido/vectorial local basado en TF-IDF y similitud coseno. Esto permite demostrar la transicion hacia recuperacion vectorial sin depender todavia de API externa o servicios instalados. El siguiente paso tecnico es reemplazar el vectorizador local por embeddings persistidos en `ChromaDB` o `FAISS`, manteniendo las mismas interfaces.
 
@@ -108,7 +109,9 @@ Los logs locales quedan en:
 ---
 
 ## Evaluacion del Sistema
-El prototipo incluye un set de preguntas inicial para validar la precision de recuperacion top-3:
+El prototipo incluye un set de preguntas controladas para validar la recuperacion
+de evidencia normativa. Cada caso define la consulta, categoria, fuente esperada
+y fragmento esperado del corpus.
 
 Para ejecutar la suite de pruebas:
 ```bash
@@ -121,7 +124,25 @@ Para comparar el recuperador lexico y el hibrido:
 python eval/evaluate_rag.py --mode both
 ```
 
-El objetivo minimo definido para esta etapa es alcanzar al menos 80% de recuperacion correcta sobre el set de prueba. En la version actual el set inicial obtiene 100% (5/5) tanto en modo lexico como en modo hibrido.
+Para generar un reporte JSON reutilizable en anexos o evidencias:
+
+```bash
+python eval/evaluate_rag.py --mode both --report eval/evaluation_report.json
+```
+
+Metricas calculadas:
+
+* **Precision top-1:** porcentaje de consultas donde el fragmento esperado queda
+  en el primer resultado.
+* **Precision top-3:** porcentaje de consultas donde el fragmento esperado
+  aparece entre los tres primeros resultados.
+* **MRR:** promedio del inverso del ranking de la evidencia correcta; favorece
+  los casos donde la fuente esperada aparece mas arriba.
+* **Precision por categoria:** permite observar desempeno por tipo de consulta:
+  requisitos, documentacion, seguimiento, validacion, seguridad e integracion.
+
+El objetivo minimo definido para esta etapa es alcanzar al menos 80% de
+recuperacion correcta top-3 sobre el set de prueba.
 
 ---
 
