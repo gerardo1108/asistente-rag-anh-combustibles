@@ -82,5 +82,59 @@
     "query": "El prototipo consulta la API oficial de Ciudadania Digital?",
     "expected_chunk_id": "agetic-ciudadania-digital",
     "expected_source": "Lineamientos AGETIC RA-0027-2026"
+  },
+  {
+    "id": "corregir-observaciones",
+    "category": "seguimiento",
+    "query": "Que debo hacer si mi solicitud tiene observaciones?",
+    "expected_chunk_id": "reglamento-anh-correccion-observaciones",
+    "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
+  },
+  {
+    "id": "seguimiento-codigo-ci",
+    "category": "seguimiento",
+    "query": "Que datos necesito para consultar el estado de mi tramite?",
+    "expected_chunk_id": "reglamento-anh-seguimiento-codigo",
+    "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
+  },
+  {
+    "id": "coherencia-datos",
+    "category": "validacion",
+    "query": "El asistente revisa que actividad destino y volumen sean coherentes?",
+    "expected_chunk_id": "reglamento-anh-declaracion-responsable",
+    "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
+  },
+  {
+    "id": "dudas-canales-oficiales",
+    "category": "seguridad",
+    "query": "Que hago si tengo una duda no cubierta por el asistente?",
+    "expected_chunk_id": "alcance-canales-oficiales",
+    "expected_source": "Delimitacion academica del prototipo"
+  },
+  {
+    "id": "vigencia-solicitud-real",
+    "category": "alcance",
+    "query": "El prototipo define la vigencia final de una autorizacion real?",
+    "expected_chunk_id": "alcance-vigencia-prototipo",
+    "expected_source": "Delimitacion academica del prototipo"
+  },
+  {
+    "id": "errores-llenado",
+    "category": "validacion",
+    "query": "Como ayuda el flujo guiado a evitar errores de llenado?",
+    "expected_chunk_id": "reglamento-anh-declaracion-responsable",
+    "expected_source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025"
+  },
+  {
+    "id": "fuera-alcance-pasaporte",
+    "category": "fuera_alcance",
+    "query": "Como puedo renovar mi pasaporte?",
+    "expected_no_results": true
+  },
+  {
+    "id": "fuera-alcance-multa-transito",
+    "category": "fuera_alcance",
+    "query": "Donde pago una multa de transito municipal?",
+    "expected_no_results": true
   }
 ]

@@ -23,7 +23,7 @@ Esta version inicial implementa un MVP ejecutable sin dependencias externas, pen
 5. Consulta de estado de tramite.
 6. Panel evaluador ANH simulado para aprobar, rechazar o dejar pendiente una solicitud.
 7. Evaluacion tecnica del recuperador con preguntas controladas, metricas top-1,
-   top-3 y MRR.
+   top-3, MRR y abstencion en consultas fuera de alcance.
 8. Pruebas funcionales del flujo conversacional para validar registro exitoso,
    entradas invalidas y prevencion de errores antes de crear solicitudes.
 9. Interfaz de demostracion con indicadores del prototipo, fuentes recuperadas
@@ -239,8 +239,9 @@ Los logs locales quedan en:
 
 ## Evaluacion del Sistema
 El prototipo incluye un set de preguntas controladas para validar la recuperacion
-de evidencia normativa. Cada caso define la consulta, categoria, fuente esperada
-y fragmento esperado del corpus.
+de evidencia normativa y la abstencion ante consultas fuera de alcance. Cada
+caso define la consulta, categoria, fuente esperada y fragmento esperado del
+corpus cuando aplica.
 
 Para ejecutar la suite de pruebas:
 ```bash
@@ -261,12 +262,16 @@ python eval/evaluate_rag.py --mode both --report eval/evaluation_report.json
 
 Metricas calculadas:
 
+* **Precision general:** porcentaje total de casos correctos, combinando
+  recuperacion esperada y abstencion esperada.
 * **Precision top-1:** porcentaje de consultas donde el fragmento esperado queda
   en el primer resultado.
 * **Precision top-3:** porcentaje de consultas donde el fragmento esperado
   aparece entre los tres primeros resultados.
 * **MRR:** promedio del inverso del ranking de la evidencia correcta; favorece
   los casos donde la fuente esperada aparece mas arriba.
+* **Precision de abstencion:** porcentaje de consultas fuera de alcance donde
+  el asistente no recupera evidencia y evita responder sin sustento.
 * **Precision por categoria:** permite observar desempeno por tipo de consulta:
   requisitos, documentacion, seguimiento, validacion, seguridad e integracion.
 
@@ -289,7 +294,7 @@ docs/despliegue_google_cloud.md
 La suite funcional simula conversaciones completas sin abrir el navegador. Cubre
 registro exitoso, CI inexistente, zona invalida, combustible invalido, volumen no
 numerico, volumen excedido, fotografia no valida, cancelacion y consulta
-normativa con fuentes.
+normativa con fuentes, ademas de abstencion ante consulta fuera de alcance.
 
 Para ejecutarla:
 

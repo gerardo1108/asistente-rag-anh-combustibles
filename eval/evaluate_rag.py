@@ -37,6 +37,10 @@ def evaluate(mode: str) -> dict:
     # Contadores de metricas agregadas.
     top1_hits = 0
     top3_hits = 0
+    retrieval_total = 0
+    overall_hits = 0
+    abstention_hits = 0
+    abstention_total = 0
     reciprocal_ranks = []
     category_stats = defaultdict(lambda: {"total": 0, "top3_hits": 0})
     cases = []
@@ -52,17 +56,27 @@ def evaluate(mode: str) -> dict:
         # Extrae ids y fuentes para compararlos con la evidencia esperada.
         chunk_ids = [result.chunk.id for result in results]
         sources = [result.chunk.source for result in results]
-        expected_chunk_id = test["expected_chunk_id"]
+        expected_no_results = test.get("expected_no_results", False)
+        expected_chunk_id = test.get("expected_chunk_id", "")
 
         # Calcula ranking de la evidencia esperada. Si no aparece, rank queda en None.
-        rank = chunk_ids.index(expected_chunk_id) + 1 if expected_chunk_id in chunk_ids else None
-        top1_ok = rank == 1
-        top3_ok = rank is not None and rank <= 3
-        reciprocal_rank = 1 / rank if rank else 0.0
-
+        if expected_no_results:
+            rank = None
+            top1_ok = False
+            top3_ok = False
+            overall_ok = not results
+            abstention_total += 1
+            abstention_hits += int(not results)
+        else:
+            rank = chunk_ids.index(expected_chunk_id) + 1 if expected_chunk_id in chunk_ids else None
+            top1_ok = rank == 1
+            top3_ok = rank is not None and rank <= 3
+            overall_ok = top3_ok
+            retrieval_total += 1
+            reciprocal_ranks.append(1 / rank if rank else 0.0)
         top1_hits += int(top1_ok)
         top3_hits += int(top3_ok)
-        reciprocal_ranks.append(reciprocal_rank)
+        overall_hits += int(overall_ok)
 
         category = test.get("category", "sin_categoria")
         category_stats[category]["total"] += 1
@@ -74,24 +88,29 @@ def evaluate(mode: str) -> dict:
                 "category": category,
                 "query": test["query"],
                 "expected_chunk_id": expected_chunk_id,
-                "expected_source": test["expected_source"],
+                "expected_source": test.get("expected_source", ""),
+                "expected_no_results": expected_no_results,
                 "retrieved_chunk_ids": chunk_ids,
                 "retrieved_sources": sources,
                 "rank": rank,
                 "top1_ok": top1_ok,
                 "top3_ok": top3_ok,
+                "overall_ok": overall_ok,
             }
         )
 
         # Imprime evidencia legible para anexar o mostrar en la demo.
         print(f"Caso: {test['id']} [{category}]")
         print(f"Consulta: {test['query']}")
-        print(f"Fragmento esperado: {expected_chunk_id}")
-        print(f"Fuente esperada: {test['expected_source']}")
+        if expected_no_results:
+            print("Esperado: abstencion sin resultados")
+        else:
+            print(f"Fragmento esperado: {expected_chunk_id}")
+            print(f"Fuente esperada: {test['expected_source']}")
         print(f"Fragmentos recuperados: {chunk_ids}")
         print(f"Recuperado: {sources}")
         print(f"Rank esperado: {rank if rank else 'no recuperado'}")
-        print(f"Resultado top-3: {'OK' if top3_ok else 'FALLO'}")
+        print(f"Resultado: {'OK' if overall_ok else 'FALLO'}")
         print("-" * 40)
 
     # Calcula metricas agregadas del set de prueba.
@@ -99,9 +118,13 @@ def evaluate(mode: str) -> dict:
     metrics = {
         "mode": mode,
         "total_cases": total,
-        "top1_accuracy": top1_hits / total if total else 0.0,
-        "top3_accuracy": top3_hits / total if total else 0.0,
-        "mean_reciprocal_rank": sum(reciprocal_ranks) / total if total else 0.0,
+        "retrieval_cases": retrieval_total,
+        "overall_accuracy": overall_hits / total if total else 0.0,
+        "top1_accuracy": top1_hits / retrieval_total if retrieval_total else 0.0,
+        "top3_accuracy": top3_hits / retrieval_total if retrieval_total else 0.0,
+        "abstention_accuracy": abstention_hits / abstention_total if abstention_total else None,
+        "abstention_cases": abstention_total,
+        "mean_reciprocal_rank": sum(reciprocal_ranks) / retrieval_total if retrieval_total else 0.0,
         "category_top3_accuracy": {
             category: values["top3_hits"] / values["total"]
             for category, values in sorted(category_stats.items())
@@ -109,8 +132,11 @@ def evaluate(mode: str) -> dict:
         "cases": cases,
     }
 
-    print(f"Precision top-1: {metrics['top1_accuracy']:.0%} ({top1_hits}/{total})")
-    print(f"Precision top-3: {metrics['top3_accuracy']:.0%} ({top3_hits}/{total})")
+    print(f"Precision general: {metrics['overall_accuracy']:.0%} ({overall_hits}/{total})")
+    print(f"Precision top-1: {metrics['top1_accuracy']:.0%} ({top1_hits}/{retrieval_total})")
+    print(f"Precision top-3: {metrics['top3_accuracy']:.0%} ({top3_hits}/{retrieval_total})")
+    if abstention_total:
+        print(f"Precision abstencion: {metrics['abstention_accuracy']:.0%} ({abstention_hits}/{abstention_total})")
     print(f"MRR: {metrics['mean_reciprocal_rank']:.2f}")
     return metrics
 

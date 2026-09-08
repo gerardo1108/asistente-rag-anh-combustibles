@@ -165,6 +165,13 @@ class ConversationFlowTest(unittest.TestCase):
         self.assertIn("Fuentes recuperadas", self.last_assistant_message())
         self.assertEqual(backend_simulado.listar_solicitudes(), [])
 
+    def test_out_of_scope_question_returns_abstention(self):
+        snapshot = self.session.handle("Como puedo renovar mi pasaporte?")
+
+        self.assertEqual(snapshot["step"], "idle")
+        self.assertIn("No encontre sustento suficiente", self.last_assistant_message())
+        self.assertEqual(backend_simulado.listar_solicitudes(), [])
+
 
 if __name__ == "__main__":
     unittest.main()

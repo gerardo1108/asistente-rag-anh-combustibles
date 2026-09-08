@@ -40,5 +40,35 @@
     "source": "Reglas de negocio del prototipo",
     "section": "Validacion de volumen",
     "text": "Para efectos del prototipo, el volumen maximo permitido se valida con dos reglas: hasta 120 litros para zona nacional y hasta 50 litros para zona fronteriza. Si el volumen declarado excede el limite aplicable, el asistente debe pedir correccion antes de registrar la solicitud."
+  },
+  {
+    "id": "reglamento-anh-correccion-observaciones",
+    "source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025",
+    "section": "Correccion de observaciones",
+    "text": "Cuando una solicitud presenta observaciones, el interesado debe revisar el motivo informado, corregir los datos o documentos observados y volver a presentar la informacion por el canal habilitado. El prototipo simula esta etapa mediante el estado rechazada y el campo de observacion del panel evaluador."
+  },
+  {
+    "id": "reglamento-anh-seguimiento-codigo",
+    "source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025",
+    "section": "Seguimiento de tramite",
+    "text": "El seguimiento de una solicitud requiere conservar el codigo de tramite generado y asociarlo con la identidad del interesado. En el prototipo, la consulta de estado solicita codigo de tramite y Carnet de Identidad para evitar mostrar informacion de solicitudes no relacionadas."
+  },
+  {
+    "id": "reglamento-anh-declaracion-responsable",
+    "source": "Reglamento especifico ANH RAN-ANH-DJ-UGJN-0008-2025",
+    "section": "Declaracion responsable",
+    "text": "La informacion declarada por el interesado debe ser coherente con la actividad, el destino de uso y el volumen solicitado. El asistente guia la captura de estos datos para reducir omisiones, inconsistencias y errores antes de registrar la solicitud simulada."
+  },
+  {
+    "id": "alcance-canales-oficiales",
+    "source": "Delimitacion academica del prototipo",
+    "section": "Canales oficiales",
+    "text": "Ante dudas no cubiertas por el corpus o situaciones particulares, el usuario debe consultar los canales oficiales de la ANH. El prototipo debe abstenerse de responder cuando no encuentre evidencia suficiente en sus fuentes locales."
+  },
+  {
+    "id": "alcance-vigencia-prototipo",
+    "source": "Delimitacion academica del prototipo",
+    "section": "Vigencia y alcance",
+    "text": "El prototipo representa una version academica y acotada del tramite. La vigencia, autorizacion final y efectos administrativos de una solicitud real dependen de la normativa aplicable y de la evaluacion oficial de la entidad competente."
   }
 ]

@@ -19,7 +19,8 @@ proyecto:
 El prototipo validado cubre:
 
 - Consulta normativa sobre requisitos, fotografia, estados, Ciudadania Digital,
-  limites simulados y responsabilidad normativa.
+  limites simulados, correccion de observaciones, seguimiento, vigencia,
+  canales oficiales y responsabilidad normativa.
 - Registro conversacional guiado de una solicitud simulada.
 - Validacion de CI contra una base local de Ciudadania Digital simulada.
 - Validacion de zona, combustible, volumen y fotografia.
@@ -43,19 +44,23 @@ La evaluacion RAG se ejecuta con:
 python eval/evaluate_rag.py --mode both
 ```
 
-El set de evaluacion contiene 12 consultas clasificadas por categoria. Cada caso
-define una consulta, fuente esperada y fragmento esperado del corpus.
+El set de evaluacion contiene 20 consultas clasificadas por categoria. Cada caso
+define una consulta, fuente esperada y fragmento esperado del corpus. Tambien
+incluye casos fuera de alcance para validar abstencion.
 
-| Motor | Casos | Precision top-1 | Precision top-3 | MRR |
-| --- | ---: | ---: | ---: | ---: |
-| `LexicalRAG` | 12 | 83% | 100% | 0.92 |
-| `HybridRAG` | 12 | 83% | 100% | 0.92 |
+| Motor | Casos | Recuperacion | Precision general | Precision top-1 | Precision top-3 | Abstencion | MRR |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `LexicalRAG` | 20 | 18 | 100% | 83% | 100% | 100% | 0.92 |
+| `HybridRAG` | 20 | 18 | 100% | 89% | 100% | 100% | 0.94 |
 
 Interpretacion:
 
 - `top-1` mide si el fragmento correcto queda en la primera posicion.
 - `top-3` mide si el fragmento correcto aparece entre las tres primeras
   evidencias recuperadas.
+- `Precision general` combina recuperacion correcta y abstencion correcta.
+- `Abstencion` mide si el asistente evita responder cuando la consulta queda
+  fuera del alcance del corpus.
 - `MRR` mide que tan arriba queda posicionada la evidencia correcta.
 
 El umbral minimo definido para esta etapa es 80% de precision top-3. Ambos
@@ -77,6 +82,14 @@ motores cumplen el umbral con 100%.
 | `responsabilidad-normativa` | seguridad | `alcance-responsabilidad` |
 | `limite-nacional` | validacion | `limites-volumen-prototipo` |
 | `api-oficial-simulada` | integracion | `agetic-ciudadania-digital` |
+| `corregir-observaciones` | seguimiento | `reglamento-anh-correccion-observaciones` |
+| `seguimiento-codigo-ci` | seguimiento | `reglamento-anh-seguimiento-codigo` |
+| `coherencia-datos` | validacion | `reglamento-anh-declaracion-responsable` |
+| `dudas-canales-oficiales` | seguridad | `alcance-canales-oficiales` |
+| `vigencia-solicitud-real` | alcance | `alcance-vigencia-prototipo` |
+| `errores-llenado` | validacion | `reglamento-anh-declaracion-responsable` |
+| `fuera-alcance-pasaporte` | fuera_alcance | Abstencion esperada |
+| `fuera-alcance-multa-transito` | fuera_alcance | Abstencion esperada |
 
 ## Pruebas Funcionales del Flujo
 
@@ -89,7 +102,7 @@ python -m unittest discover -s tests
 Resultado actual:
 
 ```text
-Ran 10 tests
+Ran 11 tests
 OK
 ```
 
@@ -110,6 +123,7 @@ los datos locales de la demostracion.
 | Fotografia no valida | Texto distinto a `foto ok` | Mantiene el flujo en `ask_photo` | OK |
 | Cancelacion | Usuario responde `no` en confirmacion | No crea solicitud y vuelve a `idle` | OK |
 | Consulta normativa | Pregunta sobre requisitos | Responde con fuentes sin iniciar registro | OK |
+| Consulta fuera de alcance | Pregunta sobre renovacion de pasaporte | Responde con abstencion y no crea solicitud | OK |
 
 ## Trazabilidad y Control de Alucinaciones
 
@@ -130,13 +144,14 @@ El prototipo reduce el riesgo de respuestas sin sustento mediante estas reglas:
 | --- | --- |
 | Acotar el alcance | Se limita al registro de consumo de combustible liquido fuera de tanque ante la ANH. |
 | Definir fuentes especificas | El corpus curado incluye Decreto Supremo N. 5400, reglamento ANH, lineamientos AGETIC y reglas de negocio del prototipo. |
-| Fortalecer evaluacion | Se agregaron 12 casos RAG con top-1, top-3 y MRR, mas 10 pruebas funcionales del flujo. |
+| Fortalecer evaluacion | Se agregaron 20 casos RAG con top-1, top-3, MRR y abstencion, mas 10 pruebas funcionales del flujo. |
 | Cuidar alucinaciones | El asistente responde con fuentes, abstencion y descargo de responsabilidad. |
 | Medir reduccion de errores | Las pruebas funcionales validan que CI, zona, combustible, volumen y fotografia se controlan antes de registrar. |
 
 ## Riesgos Pendientes
 
-- El corpus normativo sigue siendo reducido y curado manualmente.
+- El corpus normativo sigue siendo curado manualmente, aunque ya cubre mas
+  escenarios del tramite.
 - `HybridRAG` usa TF-IDF local, no embeddings semanticos reales.
 - El backend institucional es simulado.
 - La sesion conversacional es global; no separa usuarios concurrentes.

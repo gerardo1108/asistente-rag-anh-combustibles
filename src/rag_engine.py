@@ -19,7 +19,13 @@ SYNONYMS = {
     "fotografia": ["foto", "imagen", "rostro"],
     "bidon": ["envase", "tambor"],
     "bidones": ["envases", "tambores"],
+    "cubierta": ["cubiertas", "corpus"],
+    "cubiertas": ["cubierta", "corpus"],
+    "duda": ["dudas", "canales", "oficiales"],
+    "dudas": ["duda", "canales", "oficiales"],
     "rechazada": ["rechazo", "rechazada"],
+    "observacion": ["observaciones", "correccion"],
+    "observaciones": ["observacion", "correccion"],
 }
 
 
