@@ -26,6 +26,8 @@ Esta version inicial implementa un MVP ejecutable sin dependencias externas, pen
    top-3 y MRR.
 8. Pruebas funcionales del flujo conversacional para validar registro exitoso,
    entradas invalidas y prevencion de errores antes de crear solicitudes.
+9. Interfaz de demostracion con indicadores del prototipo, fuentes recuperadas
+   y mensajes visuales de validacion.
 
 La capa RAG actual conserva el recuperador lexico offline y agrega un modo hibrido/vectorial local basado en TF-IDF y similitud coseno. Esto permite demostrar la transicion hacia recuperacion vectorial sin depender todavia de API externa o servicios instalados. El siguiente paso tecnico es reemplazar el vectorizador local por embeddings persistidos en `ChromaDB` o `FAISS`, manteniendo las mismas interfaces.
 
@@ -39,6 +41,8 @@ El prototipo se organiza en cinco capas ejecutadas en un entorno controlado de p
 3. **Backend simulado:** verificacion de Ciudadania Digital, solicitudes, estados y reglas de volumen en `src/backend_simulado.py`.
 4. **Orquestador conversacional:** maquina de estados del registro en `src/conversation.py`.
 5. **Interfaz web:** aplicacion local en `src/app.py`, implementada con `http.server` de Python para no depender de instalaciones adicionales.
+   La interfaz muestra chat, fuentes recuperadas, seguimiento, panel evaluador
+   e indicadores de estado del prototipo.
 
 ---
 

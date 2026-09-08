@@ -18,10 +18,17 @@ from rag_engine import HybridRAG, LexicalRAG
 # del directorio desde donde se ejecute el script.
 ROOT = Path(__file__).resolve().parents[1]
 
+
+def get_rag_mode() -> str:
+    """Devuelve el modo RAG configurado para esta ejecucion."""
+
+    return os.environ.get("RAG_MODE", "hybrid").lower().strip()
+
+
 def build_rag_engine():
     """Crea el recuperador configurado para la sesion local."""
 
-    mode = os.environ.get("RAG_MODE", "hybrid").lower().strip()
+    mode = get_rag_mode()
     corpus_path = ROOT / "data" / "corpus_normativo.json"
     if mode == "lexical":
         return LexicalRAG(corpus_path)
@@ -63,10 +70,21 @@ HTML = """<!doctype html>
     .message {{ border-radius: 8px; padding: 10px 12px; line-height: 1.45; white-space: pre-wrap; }}
     .assistant {{ background: #eef6ff; border: 1px solid #bfdbfe; }}
     .user {{ background: #ecfdf5; border: 1px solid #a7f3d0; margin-left: 48px; }}
+    .validation {{ border-left: 5px solid #ca8a04; background: #fffbeb; }}
+    .success {{ border-left: 5px solid #16a34a; background: #f0fdf4; }}
+    .sources {{ margin-top: 8px; padding: 8px; background: white; border: 1px solid #cbd5e1; border-radius: 6px; white-space: normal; }}
+    .sources strong {{ color: #075985; }}
+    .sources ul {{ margin: 6px 0 0; padding-left: 20px; }}
     .quick {{ display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }}
     .quick button {{ margin-top: 0; background: #075985; }}
     .danger {{ background: #9f1239; }}
     .status {{ background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 10px; margin-top: 12px; }}
+    .metrics {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }}
+    .metric {{ background: #f8fafc; border: 1px solid #d8dee6; border-radius: 8px; padding: 10px; }}
+    .metric span {{ display: block; color: #64748b; font-size: 12px; text-transform: uppercase; }}
+    .metric strong {{ display: block; margin-top: 4px; font-size: 18px; color: #0f172a; }}
+    .safety {{ background: #fefce8; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-bottom: 14px; }}
+    .safety ul {{ margin: 8px 0 0; padding-left: 20px; }}
     table {{ width: 100%; border-collapse: collapse; font-size: 14px; }}
     th, td {{ border-bottom: 1px solid #d8dee6; text-align: left; padding: 8px; vertical-align: top; }}
     .notice {{ color: #475569; font-size: 14px; }}
@@ -89,7 +107,7 @@ HTML = """<!doctype html>
     </form>
     <div class="quick">
       <form method="post" action="/chat"><input type="hidden" name="message" value="iniciar registro"><button>Iniciar registro</button></form>
-      <form method="post" action="/chat"><input type="hidden" name="message" value="Que necesito para registrarme?"><button>Consultar requisitos</button></form>
+      <form method="post" action="/chat"><input type="hidden" name="message" value="Que necesito para registrarme como consumidor de combustible en bidon?"><button>Consultar requisitos</button></form>
       <form method="post" action="/chat"><input type="hidden" name="message" value="Cuantos litros puedo declarar en zona fronteriza?"><button>Limites de litros</button></form>
       <form method="post" action="/reset"><button class="danger">Reiniciar chat</button></form>
     </div>
@@ -99,6 +117,17 @@ HTML = """<!doctype html>
     </div>
   </section>
   <section>
+    <h2>Indicadores del prototipo</h2>
+    <div class="metrics">{metrics}</div>
+    <div class="safety">
+      <strong>Control de alucinaciones</strong>
+      <ul>
+        <li>Respuestas basadas en corpus local.</li>
+        <li>Fuentes visibles por consulta normativa.</li>
+        <li>Abstencion cuando no hay evidencia suficiente.</li>
+        <li>Integraciones institucionales declaradas como simuladas.</li>
+      </ul>
+    </div>
     <h2>Seguimiento y panel ANH</h2>
     <form method="post" action="/status">
       <label>Codigo de tramite</label>
@@ -233,6 +262,7 @@ class Handler(BaseHTTPRequestHandler):
             conversation_step=html.escape(SESSION.step),
             next_prompt=html.escape(SESSION.snapshot()["next_prompt"] or "Puedes consultar normativa o iniciar registro."),
             panel=panel,
+            metrics=render_metrics(),
         )
 
         # Encabezados HTTP minimos para responder HTML en UTF-8.
@@ -281,10 +311,73 @@ def render_chat_history() -> str:
     bubbles = []
     for message in SESSION.messages:
         role = html.escape(message["role"])
-        text = html.escape(message["text"])
         label = "Usuario" if role == "user" else "Asistente"
-        bubbles.append(f"<div class='message {role}'><strong>{label}</strong><br>{text}</div>")
+        css_class = f"message {role} {classify_message(message['text'])}"
+        text, sources = split_sources(message["text"])
+        source_block = render_sources(sources)
+        bubbles.append(
+            f"<div class='{css_class}'><strong>{label}</strong><br>"
+            f"{html.escape(text)}{source_block}</div>"
+        )
     return "".join(bubbles)
+
+
+def classify_message(text: str) -> str:
+    """Clasifica mensajes para resaltar errores de validacion o exito."""
+
+    lowered = text.lower()
+    validation_terms = (
+        "debe ser",
+        "no se encontro",
+        "supera el limite",
+        "no se detecto",
+        "numero entero",
+    )
+    if any(term in lowered for term in validation_terms):
+        return "validation"
+    if "solicitud registrada correctamente" in lowered or "dentro del limite" in lowered:
+        return "success"
+    return ""
+
+
+def split_sources(text: str) -> tuple[str, list[str]]:
+    """Separa el texto principal de las fuentes recuperadas, si existen."""
+
+    marker = "\n\nFuentes recuperadas:\n"
+    if marker not in text:
+        return text, []
+    answer, raw_sources = text.split(marker, 1)
+    sources = [
+        line.removeprefix("- ").strip()
+        for line in raw_sources.splitlines()
+        if line.strip() and line.strip() != "Sin fuentes"
+    ]
+    return answer, sources
+
+
+def render_sources(sources: list[str]) -> str:
+    """Renderiza fuentes recuperadas como bloque visual separado."""
+
+    if not sources:
+        return ""
+    items = "".join(f"<li>{html.escape(source)}</li>" for source in sources)
+    return f"<div class='sources'><strong>Fuentes recuperadas</strong><ul>{items}</ul></div>"
+
+
+def render_metrics() -> str:
+    """Renderiza indicadores simples para la demo academica."""
+
+    metrics = [
+        ("Motor RAG", RAG.__class__.__name__),
+        ("Modo", get_rag_mode()),
+        ("Fragmentos", len(RAG.chunks)),
+        ("Solicitudes", len(listar_solicitudes())),
+    ]
+    return "".join(
+        f"<div class='metric'><span>{html.escape(label)}</span>"
+        f"<strong>{html.escape(str(value))}</strong></div>"
+        for label, value in metrics
+    )
 
 
 def main():
