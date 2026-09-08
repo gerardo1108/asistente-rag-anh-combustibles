@@ -72,6 +72,14 @@ http://127.0.0.1:8080
 Nota: para ejecutar estos comandos, Docker Desktop o el daemon de Docker debe
 estar activo en el equipo.
 
+Validacion local realizada:
+
+```text
+Imagen Docker: construida correctamente
+Contenedor local: ejecutado en http://127.0.0.1:8080
+Respuesta HTTP: 200 OK
+```
+
 ## Comandos de Despliegue Planeado
 
 Estos comandos son una guia para cuando el equipo decida desplegar. No se han
