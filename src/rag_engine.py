@@ -245,3 +245,69 @@ class LexicalRAG:
 
         # Normaliza por longitud para que fragmentos largos no dominen el ranking.
         return score / math.sqrt(len(doc_tokens))
+
+
+class HybridRAG(LexicalRAG):
+    """Recuperador hibrido para evolucionar el MVP hacia busqueda vectorial.
+
+    La version actual mantiene el prototipo offline: construye vectores TF-IDF
+    locales y calcula similitud coseno. Luego fusiona ese puntaje vectorial con
+    el puntaje lexico heredado de `LexicalRAG`. El contrato publico sigue siendo
+    el mismo (`retrieve()` y `answer()`), por lo que la interfaz web y la
+    evaluacion pueden cambiar de motor sin reescribir el flujo conversacional.
+    """
+
+    def __init__(self, corpus_path: str | Path, lexical_weight: float = 0.35):
+        super().__init__(corpus_path)
+        self.lexical_weight = lexical_weight
+        self.vector_weight = 1.0 - lexical_weight
+        self._vocabulary = sorted(self._idf)
+        self._vocab_index = {token: index for index, token in enumerate(self._vocabulary)}
+        self._doc_vectors = [self._build_vector(tokens) for tokens in self._doc_tokens]
+
+    def retrieve(self, query: str, top_k: int = 3) -> list[RetrievalResult]:
+        """Recupera fragmentos combinando similitud vectorial y lexico-IDF."""
+
+        query_tokens = self._tokenize(query)
+        if not query_tokens:
+            return []
+
+        query_vector = self._build_vector(query_tokens)
+        scored = []
+
+        for chunk, doc_tokens, doc_vector in zip(self.chunks, self._doc_tokens, self._doc_vectors):
+            lexical_score = self._score(query_tokens, doc_tokens)
+            vector_score = self._cosine_similarity(query_vector, doc_vector)
+            combined_score = (self.lexical_weight * lexical_score) + (self.vector_weight * vector_score)
+            if combined_score > 0:
+                scored.append(RetrievalResult(chunk=chunk, score=combined_score))
+
+        scored.sort(key=lambda item: item.score, reverse=True)
+        return scored[:top_k]
+
+    def _build_vector(self, tokens: list[str]) -> dict[int, float]:
+        """Construye un vector disperso TF-IDF normalizado por token."""
+
+        counts = {token: tokens.count(token) for token in set(tokens) if token in self._vocab_index}
+        total = sum(counts.values()) or 1
+        vector = {}
+        for token, count in counts.items():
+            index = self._vocab_index[token]
+            term_frequency = count / total
+            vector[index] = term_frequency * self._idf.get(token, 1.0)
+        return vector
+
+    @staticmethod
+    def _cosine_similarity(left: dict[int, float], right: dict[int, float]) -> float:
+        """Calcula similitud coseno entre dos vectores dispersos."""
+
+        if not left or not right:
+            return 0.0
+
+        common = set(left) & set(right)
+        dot_product = sum(left[index] * right[index] for index in common)
+        left_norm = math.sqrt(sum(value * value for value in left.values()))
+        right_norm = math.sqrt(sum(value * value for value in right.values()))
+        if left_norm == 0 or right_norm == 0:
+            return 0.0
+        return dot_product / (left_norm * right_norm)

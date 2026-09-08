@@ -1,3 +1,4 @@
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -8,10 +9,16 @@ ROOT = Path(__file__).resolve().parents[1]
 # Agrega `src` al path de Python para importar el motor RAG sin empaquetar el proyecto.
 sys.path.insert(0, str(ROOT / "src"))
 
-from rag_engine import LexicalRAG
+from rag_engine import HybridRAG, LexicalRAG
 
 
-def main() -> None:
+ENGINES = {
+    "lexical": LexicalRAG,
+    "hybrid": HybridRAG,
+}
+
+
+def evaluate(mode: str) -> float:
     """Ejecuta una evaluacion top-3 del recuperador RAG.
 
     La prueba verifica si la fuente esperada aparece entre los tres primeros
@@ -20,14 +27,14 @@ def main() -> None:
     """
 
     # Instancia el recuperador con el corpus curado.
-    rag = LexicalRAG(ROOT / "data" / "corpus_normativo.json")
+    rag = ENGINES[mode](ROOT / "data" / "corpus_normativo.json")
 
     # Carga las consultas de prueba y su fuente esperada.
     tests = json.loads((ROOT / "eval" / "test_queries.json").read_text(encoding="utf-8"))
 
     # Contador de casos exitosos.
     hits = 0
-    print("Evaluacion RAG - prototipo lexico")
+    print(f"Evaluacion RAG - modo {mode}")
     print("=" * 40)
 
     # Evalua cada consulta de forma independiente.
@@ -52,9 +59,26 @@ def main() -> None:
     # Calcula la precision agregada del set de prueba.
     accuracy = hits / len(tests) if tests else 0.0
     print(f"Precision top-3: {accuracy:.0%} ({hits}/{len(tests)})")
+    return accuracy
+
+
+def main() -> None:
+    """Ejecuta la evaluacion para uno o ambos motores disponibles."""
+
+    parser = argparse.ArgumentParser(description="Evalua la recuperacion top-3 del prototipo RAG.")
+    parser.add_argument(
+        "--mode",
+        choices=["lexical", "hybrid", "both"],
+        default="hybrid",
+        help="Motor a evaluar. Usa 'both' para comparar lexico e hibrido.",
+    )
+    args = parser.parse_args()
+
+    modes = ["lexical", "hybrid"] if args.mode == "both" else [args.mode]
+    accuracies = [evaluate(mode) for mode in modes]
 
     # Falla el script si no se cumple el umbral academico definido en el proyecto.
-    if accuracy < 0.8:
+    if any(accuracy < 0.8 for accuracy in accuracies):
         raise SystemExit(1)
 
 

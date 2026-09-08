@@ -11,16 +11,26 @@ from backend_simulado import (
     listar_solicitudes,
 )
 from conversation import ConversationSession
-from rag_engine import LexicalRAG
+from rag_engine import HybridRAG, LexicalRAG
 
 
 # Raiz del repositorio. Se usa para construir rutas absolutas independientes
 # del directorio desde donde se ejecute el script.
 ROOT = Path(__file__).resolve().parents[1]
 
+def build_rag_engine():
+    """Crea el recuperador configurado para la sesion local."""
+
+    mode = os.environ.get("RAG_MODE", "hybrid").lower().strip()
+    corpus_path = ROOT / "data" / "corpus_normativo.json"
+    if mode == "lexical":
+        return LexicalRAG(corpus_path)
+    return HybridRAG(corpus_path)
+
+
 # Instancia global del recuperador. Se carga una sola vez al iniciar el servidor
 # para que cada consulta reutilice el corpus ya procesado.
-RAG = LexicalRAG(ROOT / "data" / "corpus_normativo.json")
+RAG = build_rag_engine()
 
 # Sesion conversacional global del prototipo academico.
 # Para una demo local alcanza con una sesion compartida; una version productiva

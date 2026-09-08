@@ -24,7 +24,7 @@ Esta version inicial implementa un MVP ejecutable sin dependencias externas, pen
 6. Panel evaluador ANH simulado para aprobar, rechazar o dejar pendiente una solicitud.
 7. Evaluacion tecnica inicial del recuperador con un set de preguntas controladas.
 
-La capa RAG actual es lexica y offline para facilitar la demostracion. El siguiente paso tecnico es reemplazar o complementar este recuperador con embeddings y una base vectorial (`ChromaDB` o `FAISS`), manteniendo las mismas interfaces.
+La capa RAG actual conserva el recuperador lexico offline y agrega un modo hibrido/vectorial local basado en TF-IDF y similitud coseno. Esto permite demostrar la transicion hacia recuperacion vectorial sin depender todavia de API externa o servicios instalados. El siguiente paso tecnico es reemplazar el vectorizador local por embeddings persistidos en `ChromaDB` o `FAISS`, manteniendo las mismas interfaces.
 
 ---
 
@@ -32,7 +32,7 @@ La capa RAG actual es lexica y offline para facilitar la demostracion. El siguie
 El prototipo se organiza en cinco capas ejecutadas en un entorno controlado de pruebas:
 
 1. **Corpus normativo:** fragmentos curados en `data/corpus_normativo.json`.
-2. **Motor RAG:** recuperador trazable en `src/rag_engine.py`.
+2. **Motor RAG:** recuperador trazable en `src/rag_engine.py`, con modo `lexical` y modo `hybrid`.
 3. **Backend simulado:** verificacion de Ciudadania Digital, solicitudes, estados y reglas de volumen en `src/backend_simulado.py`.
 4. **Orquestador conversacional:** maquina de estados del registro en `src/conversation.py`.
 5. **Interfaz web:** aplicacion local en `src/app.py`, implementada con `http.server` de Python para no depender de instalaciones adicionales.
@@ -75,6 +75,13 @@ El prototipo se organiza en cinco capas ejecutadas en un entorno controlado de p
    http://127.0.0.1:8001
    ```
 
+Por defecto la interfaz usa el motor hibrido. Para comparar con el recuperador lexico original:
+
+```bash
+RAG_MODE=lexical python src/app.py
+RAG_MODE=hybrid python src/app.py
+```
+
 ---
 
 ## Servicio local en macOS
@@ -108,7 +115,13 @@ Para ejecutar la suite de pruebas:
 python eval/evaluate_rag.py
 ```
 
-El objetivo minimo definido para esta etapa es alcanzar al menos 80% de recuperacion correcta sobre el set de prueba. En la version actual el set inicial obtiene 100% (5/5).
+Para comparar el recuperador lexico y el hibrido:
+
+```bash
+python eval/evaluate_rag.py --mode both
+```
+
+El objetivo minimo definido para esta etapa es alcanzar al menos 80% de recuperacion correcta sobre el set de prueba. En la version actual el set inicial obtiene 100% (5/5) tanto en modo lexico como en modo hibrido.
 
 ---
 
