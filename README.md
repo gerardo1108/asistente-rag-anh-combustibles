@@ -24,6 +24,8 @@ Esta version inicial implementa un MVP ejecutable sin dependencias externas, pen
 6. Panel evaluador ANH simulado para aprobar, rechazar o dejar pendiente una solicitud.
 7. Evaluacion tecnica del recuperador con preguntas controladas, metricas top-1,
    top-3 y MRR.
+8. Pruebas funcionales del flujo conversacional para validar registro exitoso,
+   entradas invalidas y prevencion de errores antes de crear solicitudes.
 
 La capa RAG actual conserva el recuperador lexico offline y agrega un modo hibrido/vectorial local basado en TF-IDF y similitud coseno. Esto permite demostrar la transicion hacia recuperacion vectorial sin depender todavia de API externa o servicios instalados. El siguiente paso tecnico es reemplazar el vectorizador local por embeddings persistidos en `ChromaDB` o `FAISS`, manteniendo las mismas interfaces.
 
@@ -143,6 +145,18 @@ Metricas calculadas:
 
 El objetivo minimo definido para esta etapa es alcanzar al menos 80% de
 recuperacion correcta top-3 sobre el set de prueba.
+
+### Pruebas funcionales del flujo
+La suite funcional simula conversaciones completas sin abrir el navegador. Cubre
+registro exitoso, CI inexistente, zona invalida, combustible invalido, volumen no
+numerico, volumen excedido, fotografia no valida, cancelacion y consulta
+normativa con fuentes.
+
+Para ejecutarla:
+
+```bash
+python -m unittest discover -s tests
+```
 
 ---
 
