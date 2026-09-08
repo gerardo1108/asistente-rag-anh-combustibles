@@ -146,6 +146,12 @@ Metricas calculadas:
 El objetivo minimo definido para esta etapa es alcanzar al menos 80% de
 recuperacion correcta top-3 sobre el set de prueba.
 
+La validacion formal del prototipo esta documentada en:
+
+```text
+docs/validacion_prototipo.md
+```
+
 ### Pruebas funcionales del flujo
 La suite funcional simula conversaciones completas sin abrir el navegador. Cubre
 registro exitoso, CI inexistente, zona invalida, combustible invalido, volumen no
