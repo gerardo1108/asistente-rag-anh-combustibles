@@ -3,6 +3,8 @@
 data/solicitudes_demo.json
 docs/guia_codigo.md
 docs/guia_uso_demo_cloud_run.md
+docs/artefactos/
+tools/build_guia_tecnica_docx.py
 eval/evaluation_report.json
 __pycache__/
 *.py[codz]
