@@ -139,7 +139,8 @@ class LexicalRAG:
         # Respuesta base del MVP: cita la fuente, resume desde el fragmento y
         # agrega el descargo de responsabilidad definido en el proyecto.
         answer = (
-            f"Segun {main.source}, {main.text} "
+            f"En lenguaje claro: {main.text} "
+            f"Esta respuesta se basa en {main.source}. "
             "Recuerda que esta orientacion es informativa y no reemplaza una decision oficial de la ANH."
         )
 

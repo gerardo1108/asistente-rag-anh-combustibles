@@ -30,6 +30,9 @@ class Solicitud:
     combustible: str
     volumen_litros: int
     destino: str
+    foto_validada: bool
+    foto_validacion_metodo: str
+    foto_evidencia: str
     estado: str
     observacion: str
     creada_en: str
@@ -99,6 +102,9 @@ def crear_solicitud(datos: dict) -> Solicitud:
         combustible=datos["combustible"],
         volumen_litros=int(datos["volumen_litros"]),
         destino=datos["destino"],
+        foto_validada=bool(datos.get("foto_validada", False)),
+        foto_validacion_metodo=datos.get("foto_validacion_metodo", "simulacion_controlada"),
+        foto_evidencia=datos.get("foto_evidencia", "No registrada"),
         estado="pendiente",
         observacion="Solicitud registrada en entorno simulado.",
         creada_en=datetime.now().isoformat(timespec="seconds"),

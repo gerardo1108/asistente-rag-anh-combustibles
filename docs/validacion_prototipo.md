@@ -102,7 +102,7 @@ python -m unittest discover -s tests
 Resultado actual:
 
 ```text
-Ran 11 tests
+Ran 15 tests
 OK
 ```
 
@@ -121,9 +121,13 @@ los datos locales de la demostracion.
 | Volumen fronterizo excedido | Zona fronteriza y 80 litros | Rechaza antes de registrar por superar 50 litros | OK |
 | Volumen nacional excedido | Zona nacional y 150 litros | Rechaza antes de registrar por superar 120 litros | OK |
 | Fotografia no valida | Texto distinto a `foto ok` | Mantiene el flujo en `ask_photo` | OK |
+| Fotografia simulada valida | Usuario escribe `foto ok` o `adjunto foto ci` | Registra evidencia fotografica simulada sin biometria real | OK |
 | Cancelacion | Usuario responde `no` en confirmacion | No crea solicitud y vuelve a `idle` | OK |
 | Consulta normativa | Pregunta sobre requisitos | Responde con fuentes sin iniciar registro | OK |
 | Consulta fuera de alcance | Pregunta sobre renovacion de pasaporte | Responde con abstencion y no crea solicitud | OK |
+| Consulta de estado desde chat | Codigo ANH y CI en un mensaje conversacional | Devuelve estado, interesado y observacion sin salir del chat | OK |
+| Rechazo y reinicio | Solicitud rechazada desde backend simulado y solicitud de correccion | Inicia un nuevo registro desde cero | OK |
+| Detalle en panel evaluador | Solicitud registrada con actividad, zona, combustible, volumen y destino | El panel muestra detalle suficiente para revision | OK |
 
 ## Trazabilidad y Control de Alucinaciones
 
@@ -137,6 +141,8 @@ El prototipo reduce el riesgo de respuestas sin sustento mediante estas reglas:
 - El texto de descargo aclara que la respuesta es orientativa y no reemplaza una
   decision oficial de la ANH.
 - La integracion con Ciudadania Digital se declara explicitamente como simulada.
+- La validacion fotografica se registra como simulacion controlada sin biometria
+  real, con evidencia textual de prueba y sin procesamiento de rostro.
 
 ## Relacion con Observaciones del Docente
 

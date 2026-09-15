@@ -20,16 +20,24 @@ Esta version inicial implementa un MVP ejecutable sin dependencias externas, pen
 2. Recuperacion trazable sobre un corpus curado.
 3. Registro simulado de solicitud con verificacion de Carnet de Identidad.
 4. Validacion determinista del volumen declarado segun zona nacional o fronteriza.
-5. Consulta de estado de tramite.
-6. Panel evaluador ANH simulado para aprobar, rechazar o dejar pendiente una solicitud.
-7. Evaluacion tecnica del recuperador con preguntas controladas, metricas top-1,
+5. Validacion fotografica simulada, sin biometria real, para comprobar que el
+   flujo no avanza sin evidencia de foto.
+6. Consulta de estado de tramite desde el bloque de seguimiento y desde el chat.
+7. Panel evaluador ANH simulado para revisar detalle, aprobar, rechazar o dejar pendiente una solicitud.
+8. Evaluacion tecnica del recuperador con preguntas controladas, metricas top-1,
    top-3, MRR y abstencion en consultas fuera de alcance.
-8. Pruebas funcionales del flujo conversacional para validar registro exitoso,
+9. Pruebas funcionales del flujo conversacional para validar registro exitoso,
    entradas invalidas y prevencion de errores antes de crear solicitudes.
-9. Interfaz de demostracion con indicadores del prototipo, fuentes recuperadas
+10. Interfaz de demostracion con indicadores del prototipo, fuentes recuperadas
    y mensajes visuales de validacion.
-10. Preparacion para despliegue futuro en Google Cloud Run mediante Docker, sin
+11. Preparacion para despliegue futuro en Google Cloud Run mediante Docker, sin
     desplegar todavia en nube.
+
+La validacion fotografica es una simulacion controlada del MVP. El prototipo
+acepta evidencias textuales de prueba como `foto ok` o `adjunto foto ci`,
+registra el metodo `simulacion_controlada_sin_biometria` y muestra esa evidencia
+en el panel evaluador. No realiza reconocimiento facial, comparacion biometrica
+ni procesamiento real de imagenes.
 
 La capa RAG actual conserva el recuperador lexico offline y agrega un modo hibrido/vectorial local basado en TF-IDF y similitud coseno. Esto permite demostrar la transicion hacia recuperacion vectorial sin depender todavia de API externa o servicios instalados. El siguiente paso tecnico es reemplazar el vectorizador local por embeddings persistidos en `ChromaDB` o `FAISS`, manteniendo las mismas interfaces.
 
@@ -183,7 +191,7 @@ nacional
 gasolina
 20
 Bomba de agua
-foto ok
+adjunto foto ci
 si
 ```
 

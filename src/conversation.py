@@ -1,6 +1,12 @@
 from dataclasses import dataclass, field
+import re
 
-from backend_simulado import crear_solicitud, validar_volumen, verificar_ciudadania_digital
+from backend_simulado import (
+    consultar_solicitud,
+    crear_solicitud,
+    validar_volumen,
+    verificar_ciudadania_digital,
+)
 from rag_engine import LexicalRAG
 
 
@@ -11,8 +17,14 @@ REGISTRATION_STEPS = {
     "ask_fuel": "Indica el tipo de combustible: gasolina o diesel.",
     "ask_volume": "Indica el volumen solicitado en litros.",
     "ask_destino": "Explica brevemente el destino de uso del combustible.",
-    "ask_photo": "Para esta demo escribe 'foto ok' para simular que adjuntaste rostro y Carnet de Identidad.",
+    "ask_photo": (
+        "Para esta demo escribe 'foto ok' o 'adjunto foto ci' para simular que "
+        "adjuntaste una fotografia con rostro y Carnet de Identidad visibles."
+    ),
 }
+
+TRACKING_CODE_RE = re.compile(r"\bANH-[A-Z0-9]{8}\b", re.IGNORECASE)
+CI_RE = re.compile(r"\b\d{6,10}\b")
 
 
 @dataclass
@@ -72,6 +84,11 @@ class ConversationSession:
             self._assistant("Conversacion reiniciada. Puedes hacer una consulta o iniciar un registro.")
             return self.snapshot()
 
+        # La consulta de estado puede hacerse en cualquier momento sin perder el
+        # flujo actual. Esto permite dar seguimiento desde el chat.
+        if self._try_tracking_lookup(user_text):
+            return self.snapshot()
+
         # Si la conversacion esta en reposo, se interpreta la intencion inicial.
         if self.step == "idle":
             self._handle_idle(user_text)
@@ -116,6 +133,19 @@ class ConversationSession:
         if start_registration:
             self.step = "ask_ci"
             self._assistant(REGISTRATION_STEPS[self.step])
+            return
+
+        rejected_restart = (
+            "rechazada" in text
+            and ("reiniciar" in text or "corregir" in text or "nuevo registro" in text)
+        )
+        if rejected_restart:
+            self.step = "ask_ci"
+            self.data = {}
+            self._assistant(
+                "Vamos a iniciar un nuevo registro desde cero para corregir la solicitud rechazada. "
+                f"{REGISTRATION_STEPS[self.step]}"
+            )
             return
 
         # Cualquier otra pregunta en reposo se atiende como consulta normativa.
@@ -194,10 +224,22 @@ class ConversationSession:
     def _handle_photo(self, user_text: str) -> None:
         """Simula la validacion de fotografia del interesado."""
 
-        if user_text.lower().strip() not in {"foto ok", "ok", "si", "sí"}:
-            self._assistant("No se detecto foto valida en la demo. Escribe 'foto ok' para continuar.")
+        normalized = user_text.lower().strip()
+        accepted_evidence = {
+            "foto ok",
+            "adjunto foto ci",
+            "foto con ci",
+            "rostro y ci visibles",
+        }
+        if normalized not in accepted_evidence:
+            self._assistant(
+                "No se detecto evidencia fotografica valida en la simulacion. "
+                "Escribe 'foto ok' o 'adjunto foto ci' para representar que la foto contiene rostro y CI visibles."
+            )
             return
         self.data["foto_validada"] = True
+        self.data["foto_validacion_metodo"] = "simulacion_controlada_sin_biometria"
+        self.data["foto_evidencia"] = user_text
         self.step = "confirm"
         self._assistant(self._summary())
 
@@ -230,6 +272,7 @@ class ConversationSession:
             f"- Combustible: {self.data['combustible']}\n"
             f"- Volumen: {self.data['volumen_litros']} litros\n"
             f"- Destino: {self.data['destino']}\n\n"
+            "- Fotografia: validada por simulacion controlada sin biometria real\n\n"
             "Escribe 'si' para registrar la solicitud o 'no' para cancelar."
         )
 
@@ -237,3 +280,36 @@ class ConversationSession:
         """Agrega un mensaje del asistente al historial."""
 
         self.messages.append({"role": "assistant", "text": text})
+
+    def _try_tracking_lookup(self, user_text: str) -> bool:
+        """Atiende consultas de estado con codigo de tramite y CI desde el chat."""
+
+        text = user_text.strip()
+        lowered = text.lower()
+        if "estado" not in lowered and "seguimiento" not in lowered:
+            return False
+
+        code_match = TRACKING_CODE_RE.search(text)
+        ci_match = CI_RE.search(text)
+        if not code_match:
+            return False
+
+        solicitud = consultar_solicitud(
+            code_match.group(0),
+            ci_match.group(0) if ci_match else None,
+        )
+        if not solicitud:
+            self._assistant(
+                "No encontre una solicitud con ese codigo y CI en el entorno simulado. "
+                "Verifica los datos o usa el bloque de seguimiento."
+            )
+            return True
+
+        self._assistant(
+            "Estado de la solicitud:\n"
+            f"- Codigo: {solicitud['codigo']}\n"
+            f"- Interesado: {solicitud['nombre']}\n"
+            f"- Estado: {solicitud['estado']}\n"
+            f"- Observacion: {solicitud['observacion']}"
+        )
+        return True

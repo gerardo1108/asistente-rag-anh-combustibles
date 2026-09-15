@@ -285,10 +285,21 @@ def render_panel() -> str:
         # Escapa el codigo antes de insertarlo en HTML.
         codigo = html.escape(solicitud["codigo"])
 
-        # Construye una fila con estado actual y formulario para actualizar.
+        detalle = (
+            f"CI: {html.escape(solicitud['ci'])}<br>"
+            f"Actividad: {html.escape(solicitud['actividad'])}<br>"
+            f"Zona: {html.escape(solicitud['zona'])}<br>"
+            f"Combustible: {html.escape(solicitud['combustible'])}<br>"
+            f"Volumen: {html.escape(str(solicitud['volumen_litros']))} litros<br>"
+            f"Destino: {html.escape(solicitud['destino'])}<br>"
+            f"Fotografia: {render_photo_status(solicitud)}<br>"
+            f"Observacion: {html.escape(solicitud['observacion'])}"
+        )
+
+        # Construye una fila con detalle, estado actual y formulario para actualizar.
         rows.append(
             f"<tr><td>{codigo}</td><td>{html.escape(solicitud['nombre'])}</td>"
-            f"<td>{html.escape(solicitud['estado'])}</td>"
+            f"<td>{detalle}</td><td>{html.escape(solicitud['estado'])}</td>"
             f"<td><form method='post' action='/update'>"
             f"<input type='hidden' name='codigo' value='{codigo}'>"
             f"<select name='estado'><option>aprobada</option><option>rechazada</option><option>pendiente</option></select>"
@@ -301,7 +312,22 @@ def render_panel() -> str:
         return "<p>No hay solicitudes registradas todavia.</p>"
 
     # Devuelve la tabla completa con encabezados y filas.
-    return "<table><tr><th>Codigo</th><th>Interesado</th><th>Estado</th><th>Accion</th></tr>" + "".join(rows) + "</table>"
+    return (
+        "<table><tr><th>Codigo</th><th>Interesado</th><th>Detalle</th>"
+        "<th>Estado</th><th>Accion</th></tr>"
+        + "".join(rows)
+        + "</table>"
+    )
+
+
+def render_photo_status(solicitud: dict) -> str:
+    """Resume la validacion fotografica simulada para el panel evaluador."""
+
+    if not solicitud.get("foto_validada"):
+        return "No validada"
+    method = html.escape(solicitud.get("foto_validacion_metodo", "simulacion_controlada"))
+    evidence = html.escape(solicitud.get("foto_evidencia", "foto ok"))
+    return f"Validada por {method} ({evidence})"
 
 
 def render_chat_history() -> str:

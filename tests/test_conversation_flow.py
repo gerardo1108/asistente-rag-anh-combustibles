@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 import backend_simulado
+import app
+from backend_simulado import actualizar_estado
 from conversation import ConversationSession
 from rag_engine import HybridRAG
 
@@ -72,6 +74,8 @@ class ConversationFlowTest(unittest.TestCase):
         self.assertEqual(len(solicitudes), 1)
         self.assertEqual(solicitudes[0]["ci"], "1234567")
         self.assertEqual(solicitudes[0]["estado"], "pendiente")
+        self.assertTrue(solicitudes[0]["foto_validada"])
+        self.assertEqual(solicitudes[0]["foto_validacion_metodo"], "simulacion_controlada_sin_biometria")
         self.assertIn("Solicitud registrada correctamente", self.last_assistant_message())
 
     def test_unknown_ci_does_not_advance_registration(self):
@@ -137,7 +141,26 @@ class ConversationFlowTest(unittest.TestCase):
         )
 
         self.assertEqual(snapshot["step"], "ask_photo")
-        self.assertIn("foto valida", self.last_assistant_message())
+        self.assertIn("evidencia fotografica valida", self.last_assistant_message())
+
+    def test_photo_simulation_accepts_controlled_evidence(self):
+        snapshot = self.send_many(
+            [
+                "iniciar registro",
+                "1234567",
+                "Agricultura",
+                "nacional",
+                "gasolina",
+                "20",
+                "Bomba de agua",
+                "adjunto foto ci",
+            ]
+        )
+
+        self.assertEqual(snapshot["step"], "confirm")
+        self.assertTrue(snapshot["data"]["foto_validada"])
+        self.assertEqual(snapshot["data"]["foto_evidencia"], "adjunto foto ci")
+        self.assertIn("sin biometria real", self.last_assistant_message())
 
     def test_cancel_confirmation_does_not_create_request(self):
         snapshot = self.send_many(
@@ -159,9 +182,12 @@ class ConversationFlowTest(unittest.TestCase):
         self.assertIn("Registro cancelado", self.last_assistant_message())
 
     def test_normative_question_returns_sources_without_starting_registration(self):
-        snapshot = self.session.handle("Que necesito para registrarme?")
+        snapshot = self.session.handle(
+            "Que necesito para registrarme como consumidor de combustible en bidon?"
+        )
 
         self.assertEqual(snapshot["step"], "idle")
+        self.assertIn("En lenguaje claro", self.last_assistant_message())
         self.assertIn("Fuentes recuperadas", self.last_assistant_message())
         self.assertEqual(backend_simulado.listar_solicitudes(), [])
 
@@ -171,6 +197,76 @@ class ConversationFlowTest(unittest.TestCase):
         self.assertEqual(snapshot["step"], "idle")
         self.assertIn("No encontre sustento suficiente", self.last_assistant_message())
         self.assertEqual(backend_simulado.listar_solicitudes(), [])
+
+    def test_status_can_be_checked_from_chat_with_code_and_ci(self):
+        self.send_many(
+            [
+                "iniciar registro",
+                "1234567",
+                "Agricultura",
+                "nacional",
+                "gasolina",
+                "20",
+                "Bomba de agua",
+                "foto ok",
+                "si",
+            ]
+        )
+        solicitud = backend_simulado.listar_solicitudes()[0]
+
+        snapshot = self.session.handle(
+            f"Quiero consultar el estado de {solicitud['codigo']} con CI 1234567"
+        )
+
+        self.assertEqual(snapshot["step"], "idle")
+        self.assertIn("Estado de la solicitud", self.last_assistant_message())
+        self.assertIn("pendiente", self.last_assistant_message())
+
+    def test_rejected_request_can_start_new_registration_from_chat(self):
+        self.send_many(
+            [
+                "iniciar registro",
+                "1234567",
+                "Agricultura",
+                "nacional",
+                "gasolina",
+                "20",
+                "Bomba de agua",
+                "foto ok",
+                "si",
+            ]
+        )
+        solicitud = backend_simulado.listar_solicitudes()[0]
+        actualizar_estado(solicitud["codigo"], "rechazada", "Corregir datos declarados.")
+
+        snapshot = self.session.handle("Mi solicitud fue rechazada, quiero corregir e iniciar nuevo registro")
+
+        self.assertEqual(snapshot["step"], "ask_ci")
+        self.assertIn("nuevo registro desde cero", self.last_assistant_message())
+
+    def test_evaluator_panel_shows_request_detail(self):
+        self.send_many(
+            [
+                "iniciar registro",
+                "1234567",
+                "Agricultura",
+                "nacional",
+                "gasolina",
+                "20",
+                "Bomba de agua",
+                "foto ok",
+                "si",
+            ]
+        )
+
+        panel = app.render_panel()
+
+        self.assertIn("Detalle", panel)
+        self.assertIn("CI: 1234567", panel)
+        self.assertIn("Actividad: Agricultura", panel)
+        self.assertIn("Volumen: 20 litros", panel)
+        self.assertIn("Destino: Bomba de agua", panel)
+        self.assertIn("Fotografia: Validada por simulacion_controlada_sin_biometria", panel)
 
 
 if __name__ == "__main__":
