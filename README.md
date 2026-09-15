@@ -251,6 +251,12 @@ de evidencia normativa y la abstencion ante consultas fuera de alcance. Cada
 caso define la consulta, categoria, fuente esperada y fragmento esperado del
 corpus cuando aplica.
 
+Para la siguiente entrega tambien se dejo documentado el plan Lean del MVP, el
+referente de comparacion y las reglas de decision en
+`docs/plan_lean_mvp.md`. La demo puede grabarse siguiendo
+`docs/guion_demo_video.md`, usando como respaldo las capturas de
+`docs/evidencias/`.
+
 Para ejecutar la suite de pruebas:
 ```bash
 python eval/evaluate_rag.py

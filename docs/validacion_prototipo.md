@@ -150,9 +150,23 @@ El prototipo reduce el riesgo de respuestas sin sustento mediante estas reglas:
 | --- | --- |
 | Acotar el alcance | Se limita al registro de consumo de combustible liquido fuera de tanque ante la ANH. |
 | Definir fuentes especificas | El corpus curado incluye Decreto Supremo N. 5400, reglamento ANH, lineamientos AGETIC y reglas de negocio del prototipo. |
-| Fortalecer evaluacion | Se agregaron 20 casos RAG con top-1, top-3, MRR y abstencion, mas 10 pruebas funcionales del flujo. |
+| Fortalecer evaluacion | Se agregaron 20 casos RAG con top-1, top-3, MRR y abstencion, mas 15 pruebas funcionales del flujo. |
 | Cuidar alucinaciones | El asistente responde con fuentes, abstencion y descargo de responsabilidad. |
 | Medir reduccion de errores | Las pruebas funcionales validan que CI, zona, combustible, volumen y fotografia se controlan antes de registrar. |
+| Concretar Lean, metricas y criterios de decision | Se definio un referente manual de comparacion, umbrales de metricas y reglas de decision en `docs/plan_lean_mvp.md`. |
+
+## Evidencias Visuales
+
+Las capturas de demostracion se guardaron en `docs/evidencias/`:
+
+- `demo_registro_panel.png`: registro guiado completo, seguimiento precargado y
+  panel evaluador con fotografia validada por simulacion controlada sin biometria
+  real.
+- `demo_consulta_estado_chat.png`: consulta de estado desde el chat usando codigo
+  de tramite y CI.
+
+El guion recomendado para grabar el video demostrativo esta en
+`docs/guion_demo_video.md`.
 
 ## Riesgos Pendientes
 
