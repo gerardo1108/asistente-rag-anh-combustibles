@@ -1,153 +1,141 @@
-# Despliegue planeado en Google Cloud Run
+# Guia de despliegue temporal en Google Cloud Run
+
+## Estado del documento
+
+Propuesta tecnica para revision del equipo. No representa una decision final.
+La rama `integracion/servicios-externos` permanece separada hasta acordar la
+arquitectura con el equipo.
 
 ## Objetivo
 
-Este documento deja preparado el camino para publicar el prototipo en Google
-Cloud Run durante la presentacion o grabacion del video, sin ejecutar todavia el
-despliegue.
+Publicar temporalmente el MVP para pruebas coordinadas, conservando la
+separacion entre el asistente, Backend ANH y Ciudadania Digital. El despliegue
+debe servir para validacion academica y no se considera un entorno productivo.
 
-La meta es que el equipo pueda mostrar una URL publica temporal del asistente
-sin depender de un equipo local encendido.
+## Antecedentes
 
-## Estado Actual
-
-El proyecto ya queda preparado para contenedor:
-
-- `Dockerfile`: construye una imagen Python minima.
-- `.dockerignore`: excluye archivos locales, cache, datos de demo y documentos
-  internos.
-- `src/app.py`: acepta `APP_PORT` para local y `PORT` para Cloud Run.
-- El MVP no requiere dependencias externas ni claves de API.
-
-## Recomendacion de Servicio
-
-Para la demo se recomienda Google Cloud Run porque:
-
-- Ejecuta aplicaciones HTTP en contenedores.
-- Puede escalar a cero cuando no hay trafico.
-- Permite limitar instancias para controlar costos.
-- No requiere mantener una maquina virtual encendida.
-
-## Consideraciones de Costo
-
-Cloud Run cuenta con capa gratuita mensual, pero no debe describirse como costo
-cero garantizado. La recomendacion para mantener el consumo controlado es:
-
-- Usar `min-instances=0`.
-- Usar `max-instances=1`.
-- Usar memoria baja, por ejemplo `256Mi`.
-- Evitar bases de datos administradas en esta fase.
-- Evitar llamadas a APIs externas pagadas.
-- Configurar alertas de presupuesto en Google Cloud Billing.
-- Apagar o eliminar el servicio despues de la presentacion si ya no se usa.
-
-## Limitacion de Persistencia
-
-Cloud Run usa contenedores efimeros. El archivo local
-`data/solicitudes_demo.json` puede perderse cuando la instancia se reinicia o
-escala a cero. Para la demo esto es aceptable, pero no debe presentarse como
-persistencia productiva.
-
-Si se necesita persistencia real en una fase posterior, se recomienda evaluar:
-
-- Firestore.
-- Cloud SQL.
-- Cloud Storage para archivos simples.
-
-## Prueba Local con Docker
-
-Desde la raiz del repositorio:
-
-```bash
-docker build -t asistente-rag-anh .
-docker run --rm -p 8080:8080 asistente-rag-anh
-```
-
-Luego abrir:
+El prototipo monolitico se desplego y verifico anteriormente en Cloud Run. El
+servicio y el repositorio de Artifact Registry se eliminaron despues de la
+prueba para evitar consumo innecesario. El proyecto de Google Cloud se conserva:
 
 ```text
-http://127.0.0.1:8080
+Proyecto: asistente-anh-demo-3011h
+Region propuesta: us-central1
 ```
 
-Nota: para ejecutar estos comandos, Docker Desktop o el daemon de Docker debe
-estar activo en el equipo.
-
-Validacion local realizada:
+La integracion actual agrega dos servicios simulados independientes:
 
 ```text
-Imagen Docker: construida correctamente
-Contenedor local: ejecutado en http://127.0.0.1:8080
-Respuesta HTTP: 200 OK
+Asistente web y RAG       puerto 8080
+Backend ANH simulado      puerto 8001
+Ciudadania Digital        puerto 8002
 ```
 
-## Comandos de Despliegue Planeado
+## Alternativas de despliegue
 
-Estos comandos son una guia para cuando el equipo decida desplegar. No se han
-ejecutado en esta fase.
+| Alternativa | Ventajas | Riesgos o esfuerzo | Uso recomendado |
+| --- | --- | --- | --- |
+| Ejecucion local con Docker Compose | Menor latencia, datos estables durante la sesion y depuracion sencilla. | Requiere Docker y un equipo encendido. | Desarrollo, reunion y grabacion. |
+| Un servicio Cloud Run con tres contenedores | Una sola URL publica; los mocks permanecen internos y pueden comunicarse por `localhost`. | Requiere construir tres imagenes y una configuracion multikontenedor. | Prueba remota temporal. |
+| Tres servicios Cloud Run | Desacoplamiento y escalamiento independiente. | Requiere URLs, IAM, tokens de identidad y mayor operacion. | Evolucion posterior, no necesaria para el MVP. |
 
-1. Autenticarse:
+La alternativa recomendada para una prueba remota es un servicio Cloud Run con
+tres contenedores. La decision debe confirmarse en la reunion del equipo.
 
-```bash
-gcloud auth login
-gcloud config set project ID_DEL_PROYECTO
-```
-
-2. Habilitar APIs necesarias:
-
-```bash
-gcloud services enable run.googleapis.com cloudbuild.googleapis.com
-```
-
-3. Desplegar desde el codigo fuente:
-
-```bash
-gcloud run deploy asistente-rag-anh \
-  --source . \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --min-instances 0 \
-  --max-instances 1 \
-  --memory 256Mi \
-  --set-env-vars RAG_MODE=hybrid,APP_HOST=0.0.0.0
-```
-
-4. Ver estado del servicio:
-
-```bash
-gcloud run services describe asistente-rag-anh \
-  --region us-central1
-```
-
-5. Eliminar el servicio despues de la demo, si aplica:
-
-```bash
-gcloud run services delete asistente-rag-anh \
-  --region us-central1
-```
-
-## Criterios para Usarlo en la Presentacion
-
-Antes de grabar el video o exponer el prototipo:
-
-1. Ejecutar pruebas locales:
-
-```bash
-python3 eval/evaluate_rag.py --mode both
-python3 -m unittest discover -s tests
-```
-
-2. Probar localmente la interfaz:
+## Arquitectura propuesta
 
 ```text
-http://127.0.0.1:8001
+Internet
+   |
+   v
+Cloud Run: asistente-anh-demo
+   |-- Asistente web, ingreso publico en 8080
+   |-- Backend ANH, acceso interno en localhost:8001
+   `-- Ciudadania Digital, acceso interno en localhost:8002
 ```
 
-3. Si se despliega, validar la URL publica generada por Cloud Run.
+Solo el asistente recibe trafico externo. Los mocks no deben exponerse
+publicamente. La aplicacion se inicia con `BACKEND_MODE=http`.
 
-4. Mostrar durante la demo:
+## Entornos
 
-- Consulta normativa con fuentes.
-- Registro guiado exitoso.
-- Rechazo por volumen excedido.
-- Panel evaluador simulado.
-- Documento `docs/validacion_prototipo.md` como evidencia tecnica.
+| Entorno | Proposito | Datos | Disponibilidad |
+| --- | --- | --- | --- |
+| Desarrollo local | Implementacion y pruebas unitarias. | Datos ficticios y archivos temporales. | Bajo demanda. |
+| Integracion local | Flujo completo con Docker Compose. | Semillas del repositorio de servicios externos. | Durante pruebas del equipo. |
+| Demo en Cloud Run | Acceso remoto y evidencia de ejecucion. | Solo datos ficticios. | Ventana corta previamente coordinada. |
+| Produccion futura | Servicio institucional hipotetico. | Requeriria controles y almacenamiento administrado. | Fuera del alcance del MVP. |
+
+## Preparacion requerida
+
+1. Aprobar los contratos OpenAPI y sus formatos de datos.
+2. Mantener verde la suite de pruebas del asistente y de los mocks.
+3. Construir una imagen para cada componente.
+4. Publicar temporalmente las imagenes en Artifact Registry.
+5. Definir la configuracion multikontenedor y el orden de inicio.
+6. Configurar `min-instances=0` y `max-instances=1`.
+7. Validar el flujo completo desde la URL publica.
+8. Eliminar Cloud Run y Artifact Registry cuando termine la ventana de prueba.
+
+## Seguridad y privacidad
+
+- Utilizar exclusivamente identidades, fotografias y solicitudes ficticias.
+- Publicar solamente el contenedor del asistente.
+- Mantener los mocks accesibles dentro de la instancia.
+- No almacenar claves en el repositorio.
+- Usar variables de entorno o Secret Manager si aparecen credenciales reales.
+- No registrar fotografias, CI completos ni cuerpos de solicitud en logs.
+- Aplicar HTTPS, proporcionado por Cloud Run, para el acceso publico.
+- Mantener biometria real e integraciones gubernamentales fuera del alcance.
+
+La cabecera `X-API-Key` de los mocks documenta el contrato, pero no representa
+autenticacion productiva porque el entorno simulado acepta cualquier valor no
+vacio.
+
+## Persistencia
+
+Backend ANH usa SQLite dentro de su contenedor. El sistema de archivos de Cloud
+Run es temporal y una instancia nueva puede restaurar solamente las semillas.
+Esto es aceptable para una demostracion coordinada, pero no para produccion.
+
+Una evolucion real deberia evaluar Firestore o Cloud SQL para solicitudes y
+Cloud Storage para adjuntos. Esa migracion requiere analisis de costos,
+proteccion de datos, respaldos y recuperacion.
+
+## Contingencia y recuperacion
+
+| Evento | Respuesta inmediata | Recuperacion |
+| --- | --- | --- |
+| Cloud Run no inicia | Usar la ejecucion local validada. | Revisar logs, salud y variables de entorno. |
+| Un mock no responde | Mostrar error controlado y detener el registro. | Reiniciar la revision o desplegar la imagen anterior. |
+| Se pierden solicitudes | Informar que son datos temporales de demo. | Reiniciar desde semillas y repetir el caso. |
+| La revision nueva falla | No dirigir trafico a la revision. | Volver a la revision estable anterior. |
+| Aumenta el consumo | Detener la prueba. | Eliminar servicio e imagenes y revisar facturacion. |
+
+## Criterios de liberacion
+
+El despliegue temporal se aprueba solo cuando:
+
+- Las pruebas automatizadas terminan sin fallos.
+- Backend ANH y Ciudadania Digital responden en `/health`.
+- Se completa registro, consulta y resolucion de una solicitud.
+- La interfaz identifica el modo `Backend: http`.
+- No se usan datos personales reales.
+- Existe una persona responsable de eliminar los recursos al terminar.
+
+## Evidencias para el documento final
+
+- Diagrama de la arquitectura seleccionada.
+- Captura de los tres componentes saludables.
+- Captura del flujo completo desde la interfaz.
+- Resultado de pruebas automatizadas.
+- URL temporal o evidencia de una ejecucion local si no se publica.
+- Registro de eliminacion de recursos despues de la prueba.
+
+## Decisiones pendientes de la reunion
+
+- Confirmar si la integracion HTTP entra en el alcance final.
+- Confirmar si los contratos OpenAPI quedan congelados.
+- Elegir demo local o despliegue temporal multikontenedor.
+- Definir responsable de construccion, prueba y eliminacion del despliegue.
+- Decidir si SQLite temporal es suficiente para toda la validacion academica.

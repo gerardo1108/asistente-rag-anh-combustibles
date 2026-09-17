@@ -30,8 +30,8 @@ Esta version inicial implementa un MVP ejecutable sin dependencias externas, pen
    entradas invalidas y prevencion de errores antes de crear solicitudes.
 10. Interfaz de demostracion con indicadores del prototipo, fuentes recuperadas
    y mensajes visuales de validacion.
-11. Preparacion para despliegue futuro en Google Cloud Run mediante Docker, sin
-    desplegar todavia en nube.
+11. Prueba previa del prototipo monolitico en Cloud Run, retirada despues de su
+    validacion, y propuesta de despliegue multikontenedor pendiente de acuerdo.
 
 La validacion fotografica es una simulacion controlada del MVP. El prototipo
 acepta evidencias textuales de prueba como `foto ok` o `adjunto foto ci`,
@@ -48,7 +48,9 @@ El prototipo se organiza en cinco capas ejecutadas en un entorno controlado de p
 
 1. **Corpus normativo:** fragmentos curados en `data/corpus_normativo.json`.
 2. **Motor RAG:** recuperador trazable en `src/rag_engine.py`, con modo `lexical` y modo `hybrid`.
-3. **Backend simulado:** verificacion de Ciudadania Digital, solicitudes, estados y reglas de volumen en `src/backend_simulado.py`.
+3. **Servicios simulados:** modo local en `src/backend_simulado.py` y adaptador
+   configurable en `src/backend_gateway.py` para consumir Backend ANH y
+   Ciudadania Digital mediante HTTP.
 4. **Orquestador conversacional:** maquina de estados del registro en `src/conversation.py`.
 5. **Interfaz web:** aplicacion local en `src/app.py`, implementada con `http.server` de Python para no depender de instalaciones adicionales.
    La interfaz muestra chat, fuentes recuperadas, seguimiento, panel evaluador
@@ -324,11 +326,22 @@ La validacion formal del prototipo esta documentada en:
 docs/validacion_prototipo.md
 ```
 
-La guia de despliegue planeado en Google Cloud Run esta documentada en:
+La guia de despliegue temporal en Google Cloud Run esta documentada en:
 
 ```text
 docs/despliegue_google_cloud.md
 ```
+
+Los planes para una posible produccion y para el mantenimiento del sistema se
+encuentran en:
+
+```text
+docs/plan_despliegue_produccion.md
+docs/plan_mantenimiento_ciclo_vida.md
+```
+
+Estos documentos son propuestas de la rama de integracion y quedan sujetos a
+las decisiones de la reunion del equipo.
 
 ### Pruebas funcionales del flujo
 La suite funcional simula conversaciones completas sin abrir el navegador. Cubre
