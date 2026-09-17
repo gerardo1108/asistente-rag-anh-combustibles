@@ -133,29 +133,55 @@ python3 src/app.py
 ### 5. Abrir el navegador
 
 ```text
-http://127.0.0.1:8001
+http://127.0.0.1:8080
 ```
 
-Si el puerto `8001` esta ocupado, se puede usar otro puerto.
+Si el puerto `8080` esta ocupado, se puede usar otro puerto.
 
 #### Windows PowerShell
 
 ```powershell
-$env:APP_PORT="8002"
+$env:APP_PORT="8081"
 python src/app.py
 ```
 
 #### macOS o Linux
 
 ```bash
-APP_PORT=8002 python3 src/app.py
+APP_PORT=8081 python3 src/app.py
 ```
 
 Luego abrir:
 
 ```text
-http://127.0.0.1:8002
+http://127.0.0.1:8081
 ```
+
+### Modo integrado con servicios HTTP
+
+Los mocks de Backend ANH y Ciudadania Digital se mantienen en el repositorio
+separado `asistente-anh-servicios-externos`. Primero se levantan desde ese
+repositorio:
+
+```bash
+docker compose up -d --build
+```
+
+Luego se inicia este prototipo en modo HTTP:
+
+```bash
+BACKEND_MODE=http APP_PORT=8080 python3 src/app.py
+```
+
+La integracion usa por defecto estas direcciones:
+
+- Asistente: `http://localhost:8080`
+- Backend ANH: `http://localhost:8001`
+- Ciudadania Digital: `http://localhost:8002`
+
+Las variables `BACKEND_ANH_URL`, `CIUDADANIA_DIGITAL_URL` y
+`SERVICIOS_API_KEY` permiten cambiar esas direcciones y la clave de prueba.
+Si `BACKEND_MODE` no se define, el prototipo conserva el backend local original.
 
 ### Modo del recuperador RAG
 
@@ -233,7 +259,7 @@ Una vez instalado en `~/Library/LaunchAgents`, el servidor se inicia
 automaticamente al iniciar sesion y queda disponible en:
 
 ```text
-http://127.0.0.1:8001
+http://127.0.0.1:8080
 ```
 
 Los logs locales quedan en:

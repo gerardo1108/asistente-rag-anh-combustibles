@@ -1,7 +1,8 @@
 from dataclasses import dataclass, field
 import re
 
-from backend_simulado import (
+from backend_gateway import (
+    BackendIntegrationError,
     consultar_solicitud,
     crear_solicitud,
     validar_volumen,
@@ -23,7 +24,10 @@ REGISTRATION_STEPS = {
     ),
 }
 
-TRACKING_CODE_RE = re.compile(r"\bANH-[A-Z0-9]{8}\b", re.IGNORECASE)
+TRACKING_CODE_RE = re.compile(
+    r"\bANH-(?:\d{4}-[A-Z0-9]{6}|[A-Z0-9]{8})(?![A-Z0-9-])",
+    re.IGNORECASE,
+)
 CI_RE = re.compile(r"\b\d{6,10}\b")
 
 
@@ -165,6 +169,7 @@ class ConversationSession:
             return
         self.data["ci"] = result["ci"]
         self.data["nombre"] = result["nombre"]
+        self.data["solicitante"] = result.get("solicitante", {})
         self.step = "ask_activity"
         self._assistant(f"Identidad simulada verificada para {result['nombre']}. {REGISTRATION_STEPS[self.step]}")
 
@@ -252,7 +257,11 @@ class ConversationSession:
             self._assistant("Registro cancelado. Puedes iniciar uno nuevo cuando quieras.")
             return
 
-        solicitud = crear_solicitud(self.data)
+        try:
+            solicitud = crear_solicitud(self.data)
+        except BackendIntegrationError as exc:
+            self._assistant(f"No fue posible registrar la solicitud: {exc}")
+            return
         self.step = "idle"
         self.data = {}
         self._assistant(

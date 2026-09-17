@@ -5,7 +5,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs
 
-from backend_simulado import (
+from backend_gateway import (
+    BackendIntegrationError,
     actualizar_estado,
     consultar_solicitud,
     listar_solicitudes,
@@ -131,7 +132,7 @@ HTML = """<!doctype html>
     <h2>Seguimiento y panel ANH</h2>
     <form method="post" action="/status">
       <label>Codigo de tramite</label>
-      <input name="codigo" placeholder="ANH-XXXXXXXX" value="{codigo}">
+      <input name="codigo" placeholder="ANH-2026-XXXXXX" value="{codigo}">
       <label>CI</label>
       <input name="ci" value="{status_ci}" placeholder="Ej. 1234567">
       <button>Consultar estado</button>
@@ -216,7 +217,7 @@ class Handler(BaseHTTPRequestHandler):
             self.state["codigo"] = codigo
             solicitud = consultar_solicitud(codigo)
             if solicitud:
-                self.state["status_ci"] = solicitud["ci"]
+                self.state["status_ci"] = solicitud.get("ci", "")
 
     def _reset(self):
         """Reinicia el chat y limpia resultados de seguimiento."""
@@ -230,7 +231,10 @@ class Handler(BaseHTTPRequestHandler):
         """Consulta el estado de una solicitud por codigo y CI."""
 
         # Busca la solicitud en el almacenamiento local.
-        solicitud = consultar_solicitud(data.get("codigo", ""), data.get("ci", ""))
+        try:
+            solicitud = consultar_solicitud(data.get("codigo", ""), data.get("ci", ""))
+        except BackendIntegrationError as exc:
+            solicitud = {"error": str(exc)}
 
         # Mantiene los datos de busqueda visibles en el formulario.
         self.state["codigo"] = data.get("codigo", "")
@@ -246,7 +250,12 @@ class Handler(BaseHTTPRequestHandler):
     def _update(self, data):
         """Actualiza el estado desde el panel evaluador simulado."""
 
-        actualizar_estado(data["codigo"], data["estado"], data.get("observacion", ""))
+        try:
+            actualizar_estado(data["codigo"], data["estado"], data.get("observacion", ""))
+        except BackendIntegrationError as exc:
+            self.state["status_result"] = json.dumps(
+                {"error": str(exc)}, ensure_ascii=False, indent=2
+            )
 
     def _render(self):
         """Construye y envia el HTML final al navegador."""
@@ -281,7 +290,12 @@ def render_panel() -> str:
     rows = []
 
     # Cada solicitud registrada se muestra como una fila editable.
-    for solicitud in listar_solicitudes():
+    try:
+        solicitudes = listar_solicitudes()
+    except BackendIntegrationError as exc:
+        return f"<p>No fue posible cargar el panel: {html.escape(str(exc))}</p>"
+
+    for solicitud in solicitudes:
         # Escapa el codigo antes de insertarlo en HTML.
         codigo = html.escape(solicitud["codigo"])
 
@@ -302,7 +316,7 @@ def render_panel() -> str:
             f"<td>{detalle}</td><td>{html.escape(solicitud['estado'])}</td>"
             f"<td><form method='post' action='/update'>"
             f"<input type='hidden' name='codigo' value='{codigo}'>"
-            f"<select name='estado'><option>aprobada</option><option>rechazada</option><option>pendiente</option></select>"
+            f"<select name='estado'><option>aprobada</option><option>rechazada</option></select>"
             f"<input name='observacion' placeholder='Observacion'>"
             f"<button class='secondary'>Actualizar</button></form></td></tr>"
         )
@@ -397,7 +411,7 @@ def render_metrics() -> str:
         ("Motor RAG", RAG.__class__.__name__),
         ("Modo", get_rag_mode()),
         ("Fragmentos", len(RAG.chunks)),
-        ("Solicitudes", len(listar_solicitudes())),
+        ("Backend", os.environ.get("BACKEND_MODE", "local")),
     ]
     return "".join(
         f"<div class='metric'><span>{html.escape(label)}</span>"
@@ -412,7 +426,7 @@ def main():
     # Permite cambiar host y puerto sin editar codigo. `APP_PORT` se usa en
     # desarrollo local; `PORT` es el nombre esperado por Cloud Run.
     host = os.environ.get("APP_HOST", "127.0.0.1")
-    port = int(os.environ.get("APP_PORT") or os.environ.get("PORT", "8001"))
+    port = int(os.environ.get("APP_PORT") or os.environ.get("PORT", "8080"))
 
     # ThreadingHTTPServer permite atender varias peticiones sencillas durante la demo.
     server = ThreadingHTTPServer((host, port), Handler)
