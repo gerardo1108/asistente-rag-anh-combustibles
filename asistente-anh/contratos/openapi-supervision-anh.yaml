@@ -1,0 +1,511 @@
+openapi: 3.0.3
+
+info:
+  title: Operaciones de Supervisión — ANH
+  version: 1.0.0
+  description: |
+    Operaciones internas del sistema de la ANH, consumidas por la aplicación de
+    supervisión con la que el evaluador revisa y resuelve las solicitudes.
+
+    ## Qué es y qué no es
+
+    Esta especificación **no forma parte del contrato estándar de integración**
+    (`openapi-integracion.yaml`). Aquel define lo mínimo que el asistente
+    necesita —registrar y consultar estado— y por eso puede adoptarlo cualquier
+    entidad.
+
+    Estas operaciones, en cambio, corresponden al caso de uso particular de la
+    ANH: cómo esta entidad revisa y resuelve el trámite de registro de consumo
+    de combustibles fuera de tanque. Otra entidad tendría operaciones distintas,
+    o resolvería el trámite con sistemas que ya posee.
+
+    Se documentan aquí para completar la implementación de referencia, y
+    separadas para que la frontera entre lo estándar y lo particular quede
+    visible.
+
+    ## Relación con el contrato estándar
+
+    Ambas especificaciones las implementa el mismo servicio, sobre los mismos
+    datos: el evaluador revisa las solicitudes que ingresaron por el contrato
+    estándar. La separación es documental, no de despliegue.
+
+    Cada consumidor usa su propia credencial: el asistente no puede resolver
+    trámites, y la aplicación de supervisión no registra solicitudes.
+
+    ## Implementación de referencia
+
+    Componente simulado del prototipo del trabajo "Asistente Basado en RAG para
+    Orientación en el Consumo de Combustibles Fuera de Tanque" (UNIR).
+
+servers:
+  - url: http://localhost:8001
+    description: Mock local del prototipo.
+
+security:
+  - SupervisionApiKey: []
+
+tags:
+  - name: Supervisión
+    description: Revisión y resolución de solicitudes.
+
+paths:
+
+  /v1/solicitudes:
+
+    get:
+      tags: [Supervisión]
+      summary: Listar solicitudes
+      description: |
+        Retorna las solicitudes registradas, con la información necesaria para
+        armar la bandeja de trabajo del evaluador.
+
+        Cada elemento es un **resumen**: no incluye los campos del formulario ni
+        los adjuntos. El detalle completo se obtiene abriendo una solicitud en
+        particular.
+      operationId: listarSolicitudes
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          description: Filtra por situación. Si se omite, retorna todas.
+          schema:
+            type: string
+            enum: [REGISTRADO, APROBADO, RECHAZADO]
+          example: REGISTRADO
+        - name: pagina
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: por_pagina
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: q
+          in: query
+          required: false
+          description: |
+            Búsqueda por nombre del solicitante o número de documento
+            (coincidencia parcial, sin distinguir mayúsculas/minúsculas).
+          schema:
+            type: string
+          example: Mamani
+      responses:
+        '200':
+          description: Listado de solicitudes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListadoSolicitudes'
+              example:
+                total: 2
+                pagina: 1
+                por_pagina: 20
+                solicitudes:
+                  - codigo_tramite: ANH-2026-8BE272
+                    tramite: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+                    solicitante: Juan Carlos Mamani Quispe
+                    numero_documento: "6789012"
+                    estado: REGISTRADO
+                    fecha_registro: '2026-09-11T21:29:09Z'
+                  - codigo_tramite: ANH-2026-3F91A0
+                    tramite: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+                    solicitante: María Elena Choque Alanoca
+                    numero_documento: "4521987"
+                    estado: APROBADO
+                    fecha_registro: '2026-09-10T14:11:02Z'
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '503':
+          $ref: '#/components/responses/NoDisponible'
+
+  /v1/solicitudes/{codigo}:
+
+    get:
+      tags: [Supervisión]
+      summary: Obtener el detalle de una solicitud
+      description: |
+        Retorna la solicitud completa: el sobre, todos los campos del formulario
+        y los adjuntos con su contenido.
+
+        Es la vista que el evaluador necesita para decidir: sin las fotografías
+        del documento de identidad y del titular no puede verificar lo
+        declarado.
+      operationId: obtenerSolicitud
+      parameters:
+        - $ref: '#/components/parameters/CodigoTramite'
+      responses:
+        '200':
+          description: Solicitud completa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudDetalle'
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '503':
+          $ref: '#/components/responses/NoDisponible'
+
+  /v1/solicitudes/{codigo}/estado:
+
+    patch:
+      tags: [Supervisión]
+      summary: Resolver una solicitud
+      description: |
+        Registra la decisión del evaluador sobre una solicitud: aprobación o
+        rechazo.
+
+        El rechazo exige un motivo, porque es el texto que el asistente le
+        comunica al solicitante. Debe redactarse para que una persona lo
+        entienda y sepa qué corregir, no como código interno de la entidad.
+
+        Solo se resuelven solicitudes en estado `REGISTRADO`: una vez resuelta,
+        la solicitud no cambia de estado nuevamente.
+      operationId: resolverSolicitud
+      parameters:
+        - $ref: '#/components/parameters/CodigoTramite'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolucionRequest'
+            examples:
+              aprobacion:
+                summary: Aprobación
+                value:
+                  estado: APROBADO
+              rechazo:
+                summary: Rechazo con motivo
+                value:
+                  estado: RECHAZADO
+                  motivo_rechazo: La fotografía del documento de identidad no es legible.
+      responses:
+        '200':
+          description: Solicitud resuelta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoSolicitud'
+              example:
+                codigo_tramite: ANH-2026-8BE272
+                tramite: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+                estado: APROBADO
+                fecha_registro: '2026-09-11T21:29:09Z'
+                fecha_resolucion: '2026-09-13T15:02:44Z'
+                motivo_rechazo: null
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '409':
+          description: La solicitud ya fue resuelta previamente.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example:
+                codigo: TRAMITE_YA_RESUELTO
+                mensaje: La solicitud ya fue resuelta y no admite un nuevo cambio de estado.
+        '422':
+          description: |
+            El estado indicado no es una resolución válida, o se intenta
+            rechazar sin motivo.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example:
+                codigo: MOTIVO_RECHAZO_REQUERIDO
+                mensaje: El rechazo de una solicitud requiere indicar el motivo.
+        '503':
+          $ref: '#/components/responses/NoDisponible'
+
+components:
+
+  securitySchemes:
+    SupervisionApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        Clave que identifica a la **aplicación de supervisión** ante el sistema
+        de la entidad.
+
+        Es distinta de la que usa el asistente. La separación es deliberada: el
+        asistente no debe poder resolver trámites, y la aplicación de
+        supervisión no registra solicitudes.
+
+        **Alcance en el prototipo.** El mock acepta cualquier valor: la clave se
+        declara para dejar establecida la separación de permisos, no para
+        ejercer control real durante el piloto.
+
+  parameters:
+
+    CodigoTramite:
+      name: codigo
+      in: path
+      required: true
+      description: Código de trámite.
+      schema:
+        type: string
+      example: ANH-2026-8BE272
+
+  responses:
+
+    NoAutorizado:
+      description: Clave de API ausente o inválida.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            codigo: NO_AUTORIZADO
+            mensaje: La clave de API es inválida o no fue proporcionada.
+
+    NoEncontrado:
+      description: No existe un trámite con ese código.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            codigo: TRAMITE_NO_ENCONTRADO
+            mensaje: No se encontró un trámite con el código indicado.
+
+    NoDisponible:
+      description: Sistema de la entidad no disponible.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            codigo: SERVICIO_NO_DISPONIBLE
+            mensaje: El sistema de la entidad no se encuentra disponible.
+
+  schemas:
+
+    ListadoSolicitudes:
+      type: object
+      required: [total, pagina, por_pagina, solicitudes]
+      properties:
+        total:
+          type: integer
+          description: Cantidad total de solicitudes que cumplen el filtro.
+          example: 2
+        pagina:
+          type: integer
+          example: 1
+        por_pagina:
+          type: integer
+          example: 20
+        solicitudes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResumenSolicitud'
+
+    ResumenSolicitud:
+      type: object
+      description: |
+        Vista reducida para la bandeja del evaluador. No incluye los campos del
+        formulario ni los adjuntos.
+      required: [codigo_tramite, tramite, solicitante, numero_documento, estado, fecha_registro]
+      properties:
+        codigo_tramite:
+          type: string
+          example: ANH-2026-8BE272
+        tramite:
+          type: string
+          example: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+        solicitante:
+          type: string
+          description: |
+            Nombre del solicitante, armado por la entidad para mostrarlo en la
+            bandeja. Es un campo de presentación del listado; el dato en campos
+            separados está en el detalle de la solicitud.
+          example: Juan Carlos Mamani Quispe
+        numero_documento:
+          type: string
+          example: "6789012"
+        estado:
+          type: string
+          enum: [REGISTRADO, APROBADO, RECHAZADO]
+          example: REGISTRADO
+        fecha_registro:
+          type: string
+          format: date-time
+          example: '2026-09-11T21:29:09Z'
+
+    SolicitudDetalle:
+      type: object
+      description: |
+        Solicitud completa. Los esquemas `CampoFormulario`, `Adjunto` y
+        `Solicitante` son los mismos definidos en el contrato estándar de
+        integración.
+      required: [codigo_tramite, tramite, version_formulario, solicitante, datos, adjuntos, estado, fecha_registro]
+      properties:
+        codigo_tramite:
+          type: string
+          example: ANH-2026-8BE272
+        tramite:
+          type: string
+          example: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+        version_formulario:
+          type: string
+          example: "1.0"
+        canal_origen:
+          type: string
+          example: ASISTENTE_CONVERSACIONAL
+        solicitante:
+          $ref: '#/components/schemas/Solicitante'
+        datos:
+          type: array
+          items:
+            $ref: '#/components/schemas/CampoFormulario'
+        adjuntos:
+          type: array
+          description: |
+            Archivos de la solicitud. Siempre presente y con al menos un
+            elemento: el contrato de integración los exige al registrar.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Adjunto'
+        declaracion_jurada:
+          type: boolean
+          example: true
+        estado:
+          type: string
+          enum: [REGISTRADO, APROBADO, RECHAZADO]
+          example: REGISTRADO
+        fecha_registro:
+          type: string
+          format: date-time
+          example: '2026-09-11T21:29:09Z'
+        fecha_resolucion:
+          type: string
+          format: date-time
+          nullable: true
+        motivo_rechazo:
+          type: string
+          nullable: true
+
+    Solicitante:
+      type: object
+      required: [tipo_documento, numero_documento, nombres, primer_apellido]
+      properties:
+        tipo_documento:
+          type: string
+          example: CI
+        numero_documento:
+          type: string
+          example: "6789012"
+        nombres:
+          type: string
+          example: Juan Carlos
+        primer_apellido:
+          type: string
+          example: Mamani
+        segundo_apellido:
+          type: string
+          nullable: true
+          example: Quispe
+        correo:
+          type: string
+          format: email
+          nullable: true
+        celular:
+          type: string
+          nullable: true
+
+    CampoFormulario:
+      type: object
+      required: [campo, valor]
+      properties:
+        campo:
+          type: string
+          example: volumen_litros
+        indice:
+          type: integer
+          minimum: 1
+        valor:
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+          example: 80
+
+    Adjunto:
+      type: object
+      required: [tipo, nombre_archivo, contenido_base64]
+      properties:
+        tipo:
+          type: string
+          example: FOTO_TITULAR
+        nombre_archivo:
+          type: string
+          example: titular.jpg
+        mime:
+          type: string
+          example: image/jpeg
+        contenido_base64:
+          type: string
+          format: byte
+
+    ResolucionRequest:
+      type: object
+      required: [estado]
+      properties:
+        estado:
+          type: string
+          description: Resolución del evaluador.
+          enum: [APROBADO, RECHAZADO]
+          example: APROBADO
+        motivo_rechazo:
+          type: string
+          description: |
+            Obligatorio cuando `estado` es `RECHAZADO`. Texto redactado para
+            ser comprendido por el solicitante.
+          example: La fotografía del documento de identidad no es legible.
+
+    EstadoSolicitud:
+      type: object
+      required: [codigo_tramite, tramite, estado, fecha_registro]
+      properties:
+        codigo_tramite:
+          type: string
+          example: ANH-2026-8BE272
+        tramite:
+          type: string
+          example: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+        estado:
+          type: string
+          enum: [REGISTRADO, APROBADO, RECHAZADO]
+          example: APROBADO
+        fecha_registro:
+          type: string
+          format: date-time
+        fecha_resolucion:
+          type: string
+          format: date-time
+          nullable: true
+        motivo_rechazo:
+          type: string
+          nullable: true
+
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      properties:
+        codigo:
+          type: string
+          example: TRAMITE_NO_ENCONTRADO
+        mensaje:
+          type: string
+          example: No se encontró un trámite con el código indicado.
+        detalles:
+          type: array
+          items:
+            type: string

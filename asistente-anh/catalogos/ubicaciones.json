@@ -1,0 +1,113 @@
+{
+  "LA PAZ": {
+    "Murillo": {
+      "La Paz": {"es_frontera": false},
+      "El Alto": {"es_frontera": false},
+      "Achocalla": {"es_frontera": false},
+      "Palca": {"es_frontera": false},
+      "Mecapaca": {"es_frontera": false}
+    },
+    "Omasuyos": {
+      "Achacachi": {"es_frontera": false},
+      "Ancoraimes": {"es_frontera": false},
+      "Huarina": {"es_frontera": false},
+      "Santiago de Huata": {"es_frontera": false},
+      "Chua Cocani": {"es_frontera": false}
+    },
+    "Camacho": {
+      "Puerto Acosta": {"es_frontera": true},
+      "Escoma": {"es_frontera": false},
+      "Puerto Carabuco": {"es_frontera": false},
+      "Mocomoco": {"es_frontera": false},
+      "Humanata": {"es_frontera": false}
+    },
+    "Pacajes": {
+      "Coro Coro": {"es_frontera": false},
+      "Caquiaviri": {"es_frontera": false},
+      "Calacoto": {"es_frontera": false},
+      "Comanche": {"es_frontera": false},
+      "Waldo Ballivián": {"es_frontera": false}
+    },
+    "Franz Tamayo": {
+      "Apolo": {"es_frontera": false},
+      "Pelechuco": {"es_frontera": true},
+      "Curva": {"es_frontera": false},
+      "Charazani": {"es_frontera": false},
+      "Amarete": {"es_frontera": false}
+    }
+  },
+  "COCHABAMBA": {
+    "Cercado": {
+      "Cochabamba": {"es_frontera": false},
+      "Tiquipaya": {"es_frontera": false},
+      "Colcapirhua": {"es_frontera": false},
+      "Vinto": {"es_frontera": false},
+      "Sacaba": {"es_frontera": false}
+    },
+    "Quillacollo": {
+      "Quillacollo": {"es_frontera": false},
+      "Sipe Sipe": {"es_frontera": false},
+      "Tiquipaya": {"es_frontera": false},
+      "Colcapirhua": {"es_frontera": false},
+      "Vinto": {"es_frontera": false}
+    },
+    "Chapare": {
+      "Sacaba": {"es_frontera": false},
+      "Villa Tunari": {"es_frontera": false},
+      "Shinahota": {"es_frontera": false},
+      "Chimoré": {"es_frontera": false},
+      "Puerto Villarroel": {"es_frontera": false}
+    },
+    "Arani": {
+      "Arani": {"es_frontera": false},
+      "Vacas": {"es_frontera": false},
+      "Arbieto": {"es_frontera": false},
+      "Tarata": {"es_frontera": false},
+      "Anzaldo": {"es_frontera": false}
+    },
+    "Punata": {
+      "Punata": {"es_frontera": false},
+      "Villa Rivero": {"es_frontera": false},
+      "San Benito": {"es_frontera": false},
+      "Cuchumuela": {"es_frontera": false},
+      "Tacachi": {"es_frontera": false}
+    }
+  },
+  "SANTA CRUZ": {
+    "Andrés Ibáñez": {
+      "Santa Cruz de la Sierra": {"es_frontera": false},
+      "Cotoca": {"es_frontera": false},
+      "Porongo": {"es_frontera": false},
+      "La Guardia": {"es_frontera": false},
+      "El Torno": {"es_frontera": false}
+    },
+    "Warnes": {
+      "Warnes": {"es_frontera": false},
+      "Okinawa Uno": {"es_frontera": false},
+      "Santa Rosa del Sara": {"es_frontera": false},
+      "Colpa Bélgica": {"es_frontera": false},
+      "Montero": {"es_frontera": false}
+    },
+    "Germán Busch": {
+      "Puerto Suárez": {"es_frontera": true},
+      "Puerto Quijarro": {"es_frontera": true},
+      "El Carmen Rivero Tórrez": {"es_frontera": false},
+      "Ravelo": {"es_frontera": false},
+      "Puerto Busch": {"es_frontera": false}
+    },
+    "Cordillera": {
+      "Charagua": {"es_frontera": false},
+      "Cabezas": {"es_frontera": false},
+      "Lagunillas": {"es_frontera": false},
+      "Boyuibe": {"es_frontera": false},
+      "Cuevo": {"es_frontera": false}
+    },
+    "Chiquitos": {
+      "San José de Chiquitos": {"es_frontera": false},
+      "Roboré": {"es_frontera": false},
+      "Pailón": {"es_frontera": false},
+      "Cuatro Cañadas": {"es_frontera": false},
+      "San Julián": {"es_frontera": false}
+    }
+  }
+}

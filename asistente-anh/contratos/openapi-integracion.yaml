@@ -1,0 +1,586 @@
+openapi: 3.0.3
+
+info:
+  title: Contrato de Integración Asistente ↔ Entidad
+  version: 1.0.0
+  description: |
+    Contrato mínimo de integración entre un asistente conversacional y los
+    sistemas informáticos de una entidad pública.
+
+    ## Alcance
+
+    Esta especificación define **únicamente las operaciones que el asistente
+    consume**. Son dos: registrar una solicitud y consultar su estado.
+
+    Lo que la entidad haga internamente con esa solicitud —listarla, evaluarla,
+    resolverla— queda fuera de este contrato. Cada entidad lo resuelve con sus
+    propios sistemas, y varía de una a otra. Mantener el contrato reducido a lo
+    que el asistente necesita es lo que lo hace adoptable.
+
+    ## Principio de diseño
+
+    El cuerpo del registro define un **sobre fijo**, idéntico para cualquier
+    trámite de cualquier entidad, y un **contenido opaco** (`datos`) que el
+    servicio transporta sin interpretar.
+
+    Los datos del formulario se transmiten con estructura **vertical**: una
+    lista de campos con la misma forma, en lugar de un objeto cuyas claves
+    cambian según el trámite. Así la estructura del mensaje no varía entre
+    entidades y puede describirse por completo en esta especificación.
+
+    Una entidad que adopte el contrato no declara aquí sus campos: los conoce y
+    los valida con su lógica interna.
+
+    ## Alcance de la validación
+
+    El servicio valida **estructura**, no reglas de negocio. La verificación
+    normativa —límites de volumen, requisitos aplicables al caso— es
+    responsabilidad del asistente, antes de invocar este servicio. Así el
+    ciudadano recibe la observación durante la conversación, cuando todavía
+    puede corregirla, y no después de haber completado todo el formulario.
+
+    ## Versionado
+
+    La versión mayor del contrato forma parte de la ruta (`/v1`). Los cambios
+    compatibles —agregar un campo opcional, un valor de enumeración o una
+    operación nueva— se publican dentro de la misma versión. Un cambio que rompa
+    a quien ya implementó exige una ruta nueva (`/v2`), de modo que ambas
+    versiones puedan coexistir durante la transición.
+
+    ## Implementación de referencia
+
+    Versión simulada desarrollada como parte del prototipo del trabajo
+    "Asistente Basado en RAG para Orientación en el Consumo de Combustibles
+    Fuera de Tanque" (UNIR). Entidad de referencia: Agencia Nacional de
+    Hidrocarburos (ANH), Estado Plurinacional de Bolivia.
+
+    Las operaciones internas de supervisión de la ANH se documentan por
+    separado, en `openapi-supervision-anh.yaml`, por no formar parte del
+    contrato estándar.
+
+servers:
+  - url: http://localhost:8001
+    description: |
+      Mock local del prototipo. En una implementación real, cada entidad
+      publica este mismo contrato bajo su propio dominio: las rutas y los
+      esquemas no cambian.
+
+security:
+  - AsistenteApiKey: []
+
+tags:
+  - name: Trámites
+    description: Operaciones consumidas por el asistente.
+
+paths:
+
+  /v1/solicitudes:
+
+    post:
+      tags: [Trámites]
+      summary: Registrar una solicitud de trámite
+      description: |
+        Recibe el formulario completo y retorna el código de trámite generado
+        por la entidad. El código es la fuente de verdad del trámite: lo genera
+        el sistema de la entidad, nunca el asistente, y es el dato que el
+        solicitante conserva para dar seguimiento.
+      operationId: registrarSolicitud
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitudRequest'
+            examples:
+              anhCombustible:
+                summary: Registro de consumo fuera de tanque (ANH)
+                value:
+                  tramite: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+                  version_formulario: "1.0"
+                  canal_origen: ASISTENTE_CONVERSACIONAL
+                  solicitante:
+                    tipo_documento: CI
+                    numero_documento: "6789012"
+                    nombres: Juan Carlos
+                    primer_apellido: Mamani
+                    segundo_apellido: Quispe
+                    correo: juan@dominio.com.bo
+                    celular: "71234567"
+                  datos:
+                    - campo: departamento
+                      valor: La Paz
+                    - campo: provincia
+                      valor: Murillo
+                    - campo: municipio
+                      valor: La Paz
+                    - campo: direccion
+                      valor: Av. Ecuador N° 1234
+                    - campo: actividad
+                      valor: Agricultura
+                    - campo: producto
+                      valor: DIESEL
+                    - campo: volumen_litros
+                      valor: 80
+                    - campo: uso_destino
+                      valor: Riego de parcela en Achocalla
+                  adjuntos:
+                    - tipo: FOTO_TITULAR_CON_CI
+                      nombre_archivo: titular_con_ci.jpg
+                      mime: image/jpeg
+                      contenido_base64: /9j/4AAQSkZJRgABAQ...
+                  declaracion_jurada: true
+              otraEntidadConGrupoRepetido:
+                summary: Trámite con un grupo de campos repetido (uso de `indice`)
+                description: |
+                  Ejemplo ilustrativo de otra entidad. El solicitante declara
+                  dos vehículos: los campos de cada uno se agrupan por `indice`.
+                  Los campos que aparecen una sola vez lo omiten.
+                value:
+                  tramite: ENTIDAD-EJEMPLO-DECLARACION-VEHICULOS
+                  version_formulario: "1.0"
+                  canal_origen: ASISTENTE_CONVERSACIONAL
+                  solicitante:
+                    tipo_documento: CI
+                    numero_documento: "4521987"
+                    nombres: María Elena
+                    primer_apellido: Choque
+                    segundo_apellido: Alanoca
+                  datos:
+                    - campo: departamento
+                      valor: Cochabamba
+                    - campo: vehiculo_placa
+                      indice: 1
+                      valor: 1234ABC
+                    - campo: vehiculo_marca
+                      indice: 1
+                      valor: Toyota
+                    - campo: vehiculo_placa
+                      indice: 2
+                      valor: 5678XYZ
+                    - campo: vehiculo_marca
+                      indice: 2
+                      valor: Nissan
+                  adjuntos:
+                    - tipo: CI_ANVERSO
+                      nombre_archivo: ci_anverso.jpg
+                      mime: image/jpeg
+                      contenido_base64: /9j/4AAQSkZJRgABAQ...
+                  declaracion_jurada: true
+      responses:
+        '201':
+          description: Solicitud registrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudCreada'
+              example:
+                codigo_tramite: ANH-2026-8BE272
+                estado: REGISTRADO
+                fecha_registro: '2026-09-11T21:29:09Z'
+        '400':
+          description: JSON malformado.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example:
+                codigo: SOLICITUD_MALFORMADA
+                mensaje: El cuerpo de la petición no es un JSON válido.
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '409':
+          description: |
+            Reenvío duplicado. La solicitud ya fue registrada con la misma
+            `Idempotency-Key`. El cuerpo incluye el código de trámite original.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SolicitudCreada' }
+        '422':
+          description: |
+            Falta un campo obligatorio del sobre, `adjuntos` viene vacío, o
+            `declaracion_jurada` es `false`. También aplica si la entidad
+            rechaza el contenido de `datos` según su propia validación
+            interna.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example:
+                codigo: DECLARACION_JURADA_REQUERIDA
+                mensaje: El registro concluye con la validación de los datos por parte del solicitante.
+        '503':
+          $ref: '#/components/responses/NoDisponible'
+
+  /v1/solicitudes/{codigo}/estado:
+
+    get:
+      tags: [Trámites]
+      summary: Consultar el estado de una solicitud
+      description: |
+        Retorna la información de seguimiento del trámite identificado por su
+        código.
+
+        No devuelve los datos del formulario ni los adjuntos: el asistente ya
+        los conoce, y transmitirlos en cada consulta encarecería una operación
+        que se invoca con frecuencia.
+
+        **Control de acceso.** En esta versión el código de trámite es la única
+        credencial: quien lo posea puede consultar el estado. Es una decisión
+        deliberada de simplificación para el prototipo. Una implementación en
+        producción debería exigir una verificación adicional de titularidad
+        antes de revelar el estado.
+      operationId: consultarEstadoSolicitud
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          description: Código de trámite retornado al registrar la solicitud.
+          schema:
+            type: string
+          example: ANH-2026-8BE272
+      responses:
+        '200':
+          description: Estado actual del trámite.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstadoSolicitud'
+              examples:
+                enEvaluacion:
+                  summary: Registrado, pendiente de evaluación
+                  value:
+                    codigo_tramite: ANH-2026-8BE272
+                    tramite: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+                    estado: REGISTRADO
+                    fecha_registro: '2026-09-11T21:29:09Z'
+                    fecha_resolucion: null
+                    motivo_rechazo: null
+                aprobado:
+                  summary: Aprobado
+                  value:
+                    codigo_tramite: ANH-2026-8BE272
+                    tramite: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+                    estado: APROBADO
+                    fecha_registro: '2026-09-11T21:29:09Z'
+                    fecha_resolucion: '2026-09-13T15:02:44Z'
+                    motivo_rechazo: null
+                rechazado:
+                  summary: Rechazado, con motivo
+                  value:
+                    codigo_tramite: ANH-2026-8BE272
+                    tramite: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+                    estado: RECHAZADO
+                    fecha_registro: '2026-09-11T21:29:09Z'
+                    fecha_resolucion: '2026-09-13T15:02:44Z'
+                    motivo_rechazo: La fotografía del documento de identidad no es legible.
+        '401':
+          $ref: '#/components/responses/NoAutorizado'
+        '404':
+          description: No existe un trámite con ese código.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example:
+                codigo: TRAMITE_NO_ENCONTRADO
+                mensaje: No se encontró un trámite con el código indicado.
+        '503':
+          $ref: '#/components/responses/NoDisponible'
+
+components:
+
+  securitySchemes:
+    AsistenteApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        Clave que identifica al **asistente** ante el sistema de la entidad. La
+        entidad la emite y el asistente la envía en cada petición.
+
+        Esta clave habilita únicamente las operaciones de este contrato:
+        registrar una solicitud y consultar su estado. Las operaciones internas
+        de la entidad usan una credencial distinta.
+
+        Se eligió una clave de API por ser el mecanismo más simple de adoptar:
+        no requiere infraestructura de identidad ni rotación de tokens. Una
+        entidad con requisitos mayores puede sustituirla por OAuth 2.0
+        (`clientCredentials`) sin alterar el resto del contrato.
+
+        **Alcance en el prototipo.** El mock acepta cualquier valor: la clave se
+        declara para dejar establecido el punto de integración, no para ejercer
+        control real durante el piloto.
+
+  parameters:
+
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: |
+        Identificador único generado por el asistente para esta solicitud
+        (UUID v4 recomendado). Si el asistente reintenta tras un timeout, la
+        entidad debe retornar `409` con el código de trámite ya creado, en lugar
+        de generar un trámite duplicado.
+
+        Es opcional: una entidad que no la implemente ignora la cabecera.
+      schema:
+        type: string
+        maxLength: 64
+      example: 9f1c2b74-4d3a-4a51-9f2e-0c7f1d6b8a20
+
+  responses:
+
+    NoAutorizado:
+      description: Clave de API ausente o inválida.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            codigo: NO_AUTORIZADO
+            mensaje: La clave de API es inválida o no fue proporcionada.
+
+    NoDisponible:
+      description: Sistema de la entidad no disponible.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example:
+            codigo: SERVICIO_NO_DISPONIBLE
+            mensaje: El sistema de la entidad no se encuentra disponible.
+
+  schemas:
+
+    SolicitudRequest:
+      type: object
+      description: Sobre de la solicitud. Su estructura no varía entre trámites.
+      required: [tramite, version_formulario, solicitante, datos, adjuntos, declaracion_jurada]
+      properties:
+        tramite:
+          type: string
+          description: Identificador del trámite, definido por la entidad.
+          example: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+        version_formulario:
+          type: string
+          description: |
+            Versión del formulario con que se completó la solicitud. Permite a
+            la entidad interpretar `datos` correctamente cuando el formulario
+            cambia con el tiempo.
+          example: "1.0"
+        canal_origen:
+          type: string
+          description: Canal por el que se originó la solicitud. Trazabilidad.
+          default: ASISTENTE_CONVERSACIONAL
+          example: ASISTENTE_CONVERSACIONAL
+        solicitante:
+          $ref: '#/components/schemas/Solicitante'
+        datos:
+          type: array
+          description: |
+            Campos del formulario en estructura vertical. El servicio los
+            transporta sin interpretarlos; su significado lo conoce la entidad.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/CampoFormulario'
+        adjuntos:
+          type: array
+          description: |
+            Archivos que acompañan la solicitud. Debe incluir al menos uno.
+
+            El contrato los exige porque en los trámites a los que está
+            destinado la documentación respaldatoria es parte constitutiva de
+            la solicitud: sin ella el evaluador no puede verificar lo
+            declarado. Qué archivos concretos corresponden lo define cada
+            entidad mediante el campo `tipo`.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Adjunto'
+        declaracion_jurada:
+          type: boolean
+          description: |
+            El solicitante validó los datos consignados, constituyéndolos en
+            Declaración Jurada. Debe ser `true` para que el registro proceda.
+          example: true
+
+    Solicitante:
+      type: object
+      description: |
+        Persona natural que presenta la solicitud.
+
+        El nombre se transmite en campos separados, no concatenado: la
+        concatenación pierde información que después no puede reconstruirse con
+        certeza, porque no hay forma confiable de separar nombres y apellidos de
+        una cadena única. Es además la forma en que los servicios de identidad
+        entregan el dato.
+      required: [tipo_documento, numero_documento, nombres, primer_apellido]
+      properties:
+        tipo_documento:
+          type: string
+          example: CI
+        numero_documento:
+          type: string
+          example: "6789012"
+        nombres:
+          type: string
+          description: Uno o más nombres de pila.
+          example: Juan Carlos
+        primer_apellido:
+          type: string
+          example: Mamani
+        segundo_apellido:
+          type: string
+          nullable: true
+          description: Puede no existir.
+          example: Quispe
+        correo:
+          type: string
+          format: email
+          nullable: true
+          example: juan@dominio.com.bo
+        celular:
+          type: string
+          nullable: true
+          example: "71234567"
+
+    CampoFormulario:
+      type: object
+      description: |
+        Un campo del formulario. La forma es siempre la misma, cualquiera sea el
+        trámite; lo que cambia es qué campos vienen en la lista.
+
+        Solo se transmite lo que varía entre solicitudes. La etiqueta legible,
+        el tipo de dato y demás características del campo no viajan en el
+        mensaje: el asistente las conoce por su configuración y la entidad por
+        la definición de su propio formulario.
+      required: [campo, valor]
+      properties:
+        campo:
+          type: string
+          description: Nombre técnico del campo, según lo define la entidad.
+          example: volumen_litros
+        indice:
+          type: integer
+          minimum: 1
+          description: |
+            Número de repetición, para formularios que piden declarar un grupo
+            de campos más de una vez (varios vehículos, varios inmuebles, varios
+            envases). Los campos que comparten `indice` pertenecen a la misma
+            repetición.
+
+            Se omite cuando el campo aparece una sola vez, que es el caso
+            habitual.
+          example: 1
+        valor:
+          description: Valor declarado por el solicitante.
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+          example: 80
+
+    Adjunto:
+      type: object
+      description: |
+        Archivo enviado en la misma petición, codificado en base64. Se evita así
+        un protocolo de subida previa: una sola llamada completa el registro.
+      required: [tipo, nombre_archivo, contenido_base64]
+      properties:
+        tipo:
+          type: string
+          description: |
+            Rol del archivo dentro del trámite, definido por la entidad. Para el
+            trámite de la ANH, el formulario vigente pide una única fotografía:
+            la persona sosteniendo su documento de identidad.
+          example: FOTO_TITULAR_CON_CI
+        nombre_archivo:
+          type: string
+          example: titular.jpg
+        mime:
+          type: string
+          default: image/jpeg
+          example: image/jpeg
+        contenido_base64:
+          type: string
+          format: byte
+          description: Contenido del archivo codificado en base64.
+
+    SolicitudCreada:
+      type: object
+      required: [codigo_tramite, estado, fecha_registro]
+      properties:
+        codigo_tramite:
+          type: string
+          description: |
+            Código generado por la entidad. Identifica el trámite en todas las
+            operaciones posteriores.
+          example: ANH-2026-8BE272
+        estado:
+          type: string
+          enum: [REGISTRADO]
+          description: Estado inicial tras la recepción.
+          example: REGISTRADO
+        fecha_registro:
+          type: string
+          format: date-time
+          example: '2026-09-11T21:29:09Z'
+
+    EstadoSolicitud:
+      type: object
+      description: Información de seguimiento de un trámite.
+      required: [codigo_tramite, tramite, estado, fecha_registro]
+      properties:
+        codigo_tramite:
+          type: string
+          example: ANH-2026-8BE272
+        tramite:
+          type: string
+          description: Identificador del trámite al que corresponde la solicitud.
+          example: ANH-REGISTRO-CONSUMO-FUERA-TANQUE
+        estado:
+          type: string
+          description: |
+            Situación actual del trámite.
+
+            - `REGISTRADO`: recibido, pendiente de evaluación.
+            - `APROBADO`: evaluado favorablemente.
+            - `RECHAZADO`: evaluado desfavorablemente; ver `motivo_rechazo`.
+
+            Una entidad con más estados intermedios puede extender esta lista;
+            los tres anteriores son el mínimo común.
+          enum: [REGISTRADO, APROBADO, RECHAZADO]
+          example: REGISTRADO
+        fecha_registro:
+          type: string
+          format: date-time
+          example: '2026-09-11T21:29:09Z'
+        fecha_resolucion:
+          type: string
+          format: date-time
+          nullable: true
+          description: Fecha de la resolución. Nulo mientras el trámite no se resuelva.
+          example: '2026-09-13T15:02:44Z'
+        motivo_rechazo:
+          type: string
+          nullable: true
+          description: |
+            Razón del rechazo, redactada para ser comprendida por el
+            solicitante. Solo presente cuando `estado` es `RECHAZADO`.
+          example: La fotografía del documento de identidad no es legible.
+
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      properties:
+        codigo:
+          type: string
+          description: Identificador estable del error, apto para lógica del cliente.
+          example: DECLARACION_JURADA_REQUERIDA
+        mensaje:
+          type: string
+          description: Descripción legible, apta para mostrar al solicitante.
+          example: El registro concluye con la validación de los datos por parte del solicitante.
+        detalles:
+          type: array
+          description: Campos específicos que originaron el error, si aplica.
+          items:
+            type: string
+          example: [solicitante.numero_documento]

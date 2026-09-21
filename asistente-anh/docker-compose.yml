@@ -1,0 +1,36 @@
+services:
+  backend-anh:
+    build:
+      context: .
+      dockerfile: src/sistemas_externos/backend_anh/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      PERMITIR_REINICIO: "true"
+    volumes:
+      - ./semillas:/app/semillas:ro
+
+  ciudadania-digital:
+    build:
+      context: .
+      dockerfile: src/sistemas_externos/ciudadania_digital/Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      PERMITIR_REINICIO: "true"
+    volumes:
+      - ./semillas:/app/semillas:ro
+
+  rag:
+    build:
+      context: .
+      dockerfile: src/rag/Dockerfile
+    ports:
+      - "8003:8003"
+    # Reenvía todo lo que haya en .env (GOOGLE_API_KEY, GROQ_API_KEY y
+    # cualquier override opcional como LLM_PROVEEDORES/GEMINI_MODEL/
+    # GROQ_MODEL) sin tener que declarar cada variable acá. Si falta una
+    # clave requerida, `configuracion.py` falla al arrancar con un mensaje
+    # claro, igual que antes.
+    env_file:
+      - .env

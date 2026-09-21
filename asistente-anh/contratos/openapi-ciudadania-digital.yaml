@@ -1,0 +1,242 @@
+openapi: 3.0.3
+
+info:
+  title: Servicio de Verificación de Ciudadanía Digital (simulado)
+  version: 1.0.0
+  description: |
+    Contrato del servicio que el asistente conversacional **consume** para
+    obtener los datos del titular registrado en Ciudadanía Digital.
+
+    A diferencia del contrato de integración con la entidad, esta
+    especificación no propone un estándar: describe el consumo de un servicio
+    de terceros (AGETIC) tal como lo requiere el prototipo.
+
+    ## Simulación del flujo de autenticación
+
+    En producción, esta operación **no se invoca con un documento de identidad
+    suelto**. Ciudadanía Digital entrega los datos del titular únicamente tras
+    un flujo de autenticación basado en OpenID Connect, en el que la persona se
+    autentica con sus propias credenciales y consiente la entrega de sus datos
+    a la aplicación solicitante.
+
+    El prototipo simula ese paso: se asume que la autenticación ya ocurrió y se
+    consulta directamente por el número de documento. Esta simplificación
+    existe **solo para el piloto**, y no debe entenderse como una propuesta de
+    diseño. Una implementación real debe sustituir esta operación por el flujo
+    OIDC correspondiente, sin lo cual sería posible obtener datos personales de
+    cualquier ciudadano conociendo únicamente su cédula de identidad.
+
+    ## Alcance de los datos
+
+    Se devuelve el conjunto mínimo que el asistente necesita para prellenar el
+    formulario del trámite. No se solicitan ni se almacenan datos adicionales.
+
+    ## Implementación de referencia
+
+    Componente simulado del prototipo del trabajo "Asistente Basado en RAG para
+    Orientación en el Consumo de Combustibles Fuera de Tanque" (UNIR).
+
+servers:
+  - url: http://localhost:8002
+    description: Mock local del prototipo.
+
+security:
+  - ApiKeyAuth: []
+
+tags:
+  - name: Ciudadanía Digital
+    description: Verificación del titular.
+
+paths:
+
+  /v1/verificacion-ciudadania:
+
+    post:
+      tags: [Ciudadanía Digital]
+      summary: Verificar al titular y obtener sus datos
+      description: |
+        Retorna los datos del titular cuando la persona está **registrada y
+        habilitada** en Ciudadanía Digital.
+
+        En cualquier otra situación la operación falla. La distinción entre los
+        casos de error es relevante para el asistente: no orienta igual a quien
+        nunca se registró que a quien tiene la cuenta registrada pero no
+        operativa. El campo `codigo` de la respuesta de error identifica la
+        situación concreta.
+      operationId: verificarCiudadania
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificacionRequest'
+            example:
+              tipo_documento: CI
+              numero_documento: "6789012"
+      responses:
+        '200':
+          description: Titular registrado y habilitado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Titular'
+              example:
+                tipo_documento: CI
+                numero_documento: "6789012"
+                nombres: Juan Carlos
+                primer_apellido: Mamani
+                segundo_apellido: Quispe
+                fecha_nacimiento: '1985-03-14'
+                genero: M
+                correo: juan@dominio.com.bo
+                celular: "71234567"
+        '400':
+          description: JSON malformado o documento con formato inválido.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example:
+                codigo: DOCUMENTO_INVALIDO
+                mensaje: El número de documento no tiene un formato válido.
+        '401':
+          description: Clave de API ausente o inválida.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example:
+                codigo: NO_AUTORIZADO
+                mensaje: La clave de API es inválida o no fue proporcionada.
+        '404':
+          description: |
+            La persona no está registrada en Ciudadanía Digital.
+
+            El asistente debe orientarla hacia el registro antes de continuar
+            con el trámite.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example:
+                codigo: NO_REGISTRADO
+                mensaje: No existe un registro de Ciudadanía Digital para el documento indicado.
+        '409':
+          description: |
+            La persona está registrada, pero su cuenta no se encuentra
+            habilitada para operar.
+
+            El asistente debe indicarle qué gestión corresponde según el
+            `codigo` recibido, antes de continuar con el trámite.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              examples:
+                bloqueada:
+                  summary: Cuenta bloqueada
+                  value:
+                    codigo: CUENTA_BLOQUEADA
+                    mensaje: La cuenta de Ciudadanía Digital se encuentra bloqueada.
+                revalidacion:
+                  summary: Requiere revalidación
+                  value:
+                    codigo: REQUIERE_REVALIDACION
+                    mensaje: La cuenta de Ciudadanía Digital requiere revalidación.
+        '503':
+          description: Servicio de Ciudadanía Digital no disponible.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        Clave que identifica al asistente ante el servicio.
+
+        **Alcance en el prototipo.** El mock acepta cualquier valor: la clave
+        se declara para dejar establecido el punto de integración, no para
+        ejercer control real durante el piloto.
+
+  schemas:
+
+    VerificacionRequest:
+      type: object
+      required: [tipo_documento, numero_documento]
+      properties:
+        tipo_documento:
+          type: string
+          default: CI
+          example: CI
+        numero_documento:
+          type: string
+          example: "6789012"
+
+    Titular:
+      type: object
+      description: |
+        Datos del titular registrado. Conjunto mínimo requerido por el
+        asistente para prellenar el formulario del trámite.
+      required: [tipo_documento, numero_documento, nombres, primer_apellido, fecha_nacimiento]
+      properties:
+        tipo_documento:
+          type: string
+          example: CI
+        numero_documento:
+          type: string
+          example: "6789012"
+        nombres:
+          type: string
+          example: Juan Carlos
+        primer_apellido:
+          type: string
+          example: Mamani
+        segundo_apellido:
+          type: string
+          nullable: true
+          description: Puede no existir.
+          example: Quispe
+        fecha_nacimiento:
+          type: string
+          format: date
+          example: '1985-03-14'
+        genero:
+          type: string
+          nullable: true
+          enum: [M, F]
+          example: M
+        correo:
+          type: string
+          format: email
+          nullable: true
+          description: Correo electrónico registrado por el titular.
+          example: juan@dominio.com.bo
+        celular:
+          type: string
+          nullable: true
+          description: Número de teléfono celular registrado por el titular.
+          example: "71234567"
+
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      properties:
+        codigo:
+          type: string
+          description: |
+            Identificador estable de la situación, apto para la lógica del
+            asistente.
+
+            Valores previstos: `DOCUMENTO_INVALIDO`, `NO_AUTORIZADO`,
+            `NO_REGISTRADO`, `CUENTA_BLOQUEADA`, `REQUIERE_REVALIDACION`,
+            `SERVICIO_NO_DISPONIBLE`.
+          example: REQUIERE_REVALIDACION
+        mensaje:
+          type: string
+          description: Descripción legible, apta para comunicar al solicitante.
+          example: La cuenta de Ciudadanía Digital requiere revalidación.
+        detalles:
+          type: array
+          items:
+            type: string

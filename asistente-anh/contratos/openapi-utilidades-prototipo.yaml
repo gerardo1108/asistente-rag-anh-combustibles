@@ -1,0 +1,184 @@
+openapi: 3.0.3
+
+info:
+  title: Utilidades del Prototipo
+  version: 1.0.0
+  description: |
+    Operaciones de instrumentación que ambos servicios simulados exponen.
+
+    ## Qué es y qué no es
+
+    Estas operaciones **no pertenecen al dominio del trámite** ni al contrato de
+    integración. No las expondría ningún sistema real: existen porque los
+    servicios de este prototipo son simulados y necesitan ser operados durante
+    el desarrollo y la demostración.
+
+    Se documentan aparte precisamente para que la frontera quede visible. El
+    contrato estándar (`openapi-integracion.yaml`) describe lo que una entidad
+    pública implementaría; esto describe el andamiaje del prototipo.
+
+    ## Dónde se implementan
+
+    En ambos servicios, bajo su propia dirección:
+
+    - Backend ANH — `http://localhost:8001`
+    - Ciudadanía Digital — `http://localhost:8002`
+
+    ## Implementación de referencia
+
+    Componente del prototipo del trabajo "Asistente Basado en RAG para
+    Orientación en el Consumo de Combustibles Fuera de Tanque" (UNIR).
+
+servers:
+  - url: http://localhost:8001
+    description: Backend ANH (mock).
+  - url: http://localhost:8002
+    description: Ciudadanía Digital (mock).
+
+tags:
+  - name: Utilidades
+    description: Instrumentación del prototipo.
+
+paths:
+
+  /health:
+
+    get:
+      tags: [Utilidades]
+      summary: Verificar que el servicio responde
+      description: |
+        Comprobación de disponibilidad. No requiere credencial: se invoca desde
+        Docker Compose para saber si el contenedor terminó de arrancar, antes de
+        que ningún cliente esté autenticado.
+      operationId: verificarSalud
+      security: []
+      responses:
+        '200':
+          description: El servicio responde.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Salud'
+              example:
+                estado: ok
+                servicio: backend-anh
+                modo: mock
+                persistencia: memoria
+                registros: 3
+
+  /reiniciar:
+
+    post:
+      tags: [Utilidades]
+      summary: Restaurar el estado inicial
+      description: |
+        Descarta todos los datos acumulados durante la sesión y vuelve a cargar
+        las semillas, dejando el servicio como recién arrancado.
+
+        Su razón de ser es la grabación de la demostración: si durante una toma
+        se aprueba o rechaza un trámite y hay que repetirla, sin reinicio el caso
+        ya quedó consumido. También sirve para dejar un estado conocido antes de
+        ejecutar pruebas.
+
+        **La operación es destructiva y no se puede deshacer.**
+
+        ## Habilitación
+
+        Solo responde cuando la variable de entorno `PERMITIR_REINICIO` está
+        activa. Con la variable desactivada retorna `403`.
+
+        El interruptor es deliberado: hace explícito que esta operación no
+        pertenece a un despliegue normal, y evita que un reinicio accidental
+        borre el estado en medio de una demostración.
+      operationId: reiniciarEstado
+      security: []
+      responses:
+        '200':
+          description: Estado restaurado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultadoReinicio'
+              example:
+                estado: reiniciado
+                registros_eliminados: 7
+                registros_cargados: 3
+                fecha: '2026-09-15T02:40:11Z'
+        '403':
+          description: |
+            El reinicio no está habilitado en esta instancia
+            (`PERMITIR_REINICIO` desactivada).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                codigo: REINICIO_NO_HABILITADO
+                mensaje: La operación de reinicio no está habilitada en esta instancia.
+
+components:
+
+  schemas:
+
+    Salud:
+      type: object
+      required: [estado, servicio]
+      properties:
+        estado:
+          type: string
+          enum: [ok]
+          example: ok
+        servicio:
+          type: string
+          description: Identificador del servicio que responde.
+          enum: [backend-anh, ciudadania-digital]
+          example: backend-anh
+        modo:
+          type: string
+          enum: [mock]
+          example: mock
+        persistencia:
+          type: string
+          description: |
+            Dónde está guardando los datos. Distingue los dos niveles del mock:
+            `memoria` durante el desarrollo, `sqlite` para la demostración.
+          enum: [memoria, sqlite]
+          example: memoria
+        registros:
+          type: integer
+          description: |
+            Cantidad de elementos almacenados: solicitudes en el Backend ANH,
+            titulares en Ciudadanía Digital.
+          example: 3
+
+    ResultadoReinicio:
+      type: object
+      required: [estado, registros_cargados]
+      properties:
+        estado:
+          type: string
+          enum: [reiniciado]
+          example: reiniciado
+        registros_eliminados:
+          type: integer
+          description: Elementos descartados al reiniciar.
+          example: 7
+        registros_cargados:
+          type: integer
+          description: Elementos cargados desde las semillas.
+          example: 3
+        fecha:
+          type: string
+          format: date-time
+          example: '2026-09-15T02:40:11Z'
+
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      properties:
+        codigo:
+          type: string
+          example: REINICIO_NO_HABILITADO
+        mensaje:
+          type: string
+          example: La operación de reinicio no está habilitada en esta instancia.

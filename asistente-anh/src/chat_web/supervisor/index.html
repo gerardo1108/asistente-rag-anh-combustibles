@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel de Supervisión ANH</title>
+    <link rel="icon" href="/recursos/logo-anh.webp" />
+    <link rel="stylesheet" href="/supervisor/css/estilos.css" />
+  </head>
+  <body>
+    <header class="header">
+      <img class="logo" src="/recursos/logo-anh.webp" alt="Logo ANH" />
+      <div class="header-textos">
+        <h1>Panel de Supervisión</h1>
+        <p>Registro de consumo de combustibles fuera de tanque</p>
+      </div>
+    </header>
+
+    <div class="contenedor">
+      <div class="tarjeta">
+        <div class="controles">
+          <input type="search" id="input-buscar" placeholder="Buscar por nombre o número de documento..." />
+          <div class="filtros-estado" id="filtros-estado">
+            <button type="button" class="filtro-estado" data-estado="">Todos</button>
+            <button type="button" class="filtro-estado" data-estado="REGISTRADO">Registrado</button>
+            <button type="button" class="filtro-estado" data-estado="APROBADO">Aprobado</button>
+            <button type="button" class="filtro-estado" data-estado="RECHAZADO">Rechazado</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tarjeta">
+        <div class="lista-solicitudes" id="lista-solicitudes"></div>
+        <div class="paginacion" id="paginacion"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/supervisor/js/lista.js"></script>
+  </body>
+</html>

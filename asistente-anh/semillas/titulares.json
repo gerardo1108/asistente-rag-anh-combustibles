@@ -1,0 +1,53 @@
+{
+  "_comentario": "Datos iniciales de Ciudadanía Digital. Se cargan al arrancar y se restauran con POST /reiniciar. Los documentos de Juan Carlos y María Elena coinciden con los solicitantes de las semillas del Backend ANH, para que las demostraciones sean coherentes entre ambos servicios.",
+  "titulares": [
+    {
+      "tipo_documento": "CI",
+      "numero_documento": "6789012",
+      "nombres": "Juan Carlos",
+      "primer_apellido": "Mamani",
+      "segundo_apellido": "Quispe",
+      "fecha_nacimiento": "1985-03-14",
+      "genero": "M",
+      "correo": "juan.mamani@ejemplo.com.bo",
+      "celular": "71234567",
+      "estado_cuenta": "HABILITADA"
+    },
+    {
+      "tipo_documento": "CI",
+      "numero_documento": "4521987",
+      "nombres": "María Elena",
+      "primer_apellido": "Choque",
+      "segundo_apellido": "Alanoca",
+      "fecha_nacimiento": "1990-07-22",
+      "genero": "F",
+      "correo": "maria.choque@ejemplo.com.bo",
+      "celular": "72345678",
+      "estado_cuenta": "HABILITADA"
+    },
+    {
+      "tipo_documento": "CI",
+      "numero_documento": "9087654",
+      "nombres": "Rodrigo",
+      "primer_apellido": "Vargas",
+      "segundo_apellido": "Peñaranda",
+      "fecha_nacimiento": "1978-11-02",
+      "genero": "M",
+      "correo": "rodrigo.vargas@ejemplo.com.bo",
+      "celular": "73456789",
+      "estado_cuenta": "REQUIERE_REVALIDACION"
+    },
+    {
+      "tipo_documento": "CI",
+      "numero_documento": "5556677",
+      "nombres": "Lucía",
+      "primer_apellido": "Fernández",
+      "segundo_apellido": "Rojas",
+      "fecha_nacimiento": "1995-01-30",
+      "genero": "F",
+      "correo": "lucia.fernandez@ejemplo.com.bo",
+      "celular": "74567890",
+      "estado_cuenta": "BLOQUEADA"
+    }
+  ]
+}

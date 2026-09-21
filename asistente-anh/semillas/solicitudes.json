@@ -1,0 +1,188 @@
+{
+  "_comentario": "Datos iniciales del Backend ANH. Se cargan al arrancar y se restauran con POST /reiniciar. Los códigos son fijos para que las tres personas del equipo graben su video con los mismos ejemplos.",
+  "solicitudes": [
+    {
+      "codigo_tramite": "ANH-2026-000001",
+      "tramite": "ANH-REGISTRO-CONSUMO-FUERA-TANQUE",
+      "version_formulario": "1.0",
+      "canal_origen": "ASISTENTE_CONVERSACIONAL",
+      "solicitante": {
+        "tipo_documento": "CI",
+        "numero_documento": "6789012",
+        "nombres": "Juan Carlos",
+        "primer_apellido": "Mamani",
+        "segundo_apellido": "Quispe",
+        "correo": "juan.mamani@ejemplo.com.bo",
+        "celular": "71234567"
+      },
+      "datos": [
+        {
+          "campo": "departamento",
+          "valor": "La Paz"
+        },
+        {
+          "campo": "provincia",
+          "valor": "Murillo"
+        },
+        {
+          "campo": "municipio",
+          "valor": "La Paz"
+        },
+        {
+          "campo": "direccion",
+          "valor": "Av. Ecuador N° 1234"
+        },
+        {
+          "campo": "actividad",
+          "valor": "Agricultura"
+        },
+        {
+          "campo": "producto",
+          "valor": "DIESEL"
+        },
+        {
+          "campo": "volumen_litros",
+          "valor": 80
+        },
+        {
+          "campo": "uso_destino",
+          "valor": "Riego de parcela en Achocalla"
+        }
+      ],
+      "adjuntos": [
+        {
+          "tipo": "FOTO_TITULAR_CON_CI",
+          "archivo": "juan_titular_con_ci.jpg",
+          "mime": "image/jpeg"
+        }
+      ],
+      "declaracion_jurada": true,
+      "estado": "REGISTRADO",
+      "fecha_registro": "2026-09-10T09:15:00Z",
+      "fecha_resolucion": null,
+      "motivo_rechazo": null
+    },
+    {
+      "codigo_tramite": "ANH-2026-000002",
+      "tramite": "ANH-REGISTRO-CONSUMO-FUERA-TANQUE",
+      "version_formulario": "1.0",
+      "canal_origen": "ASISTENTE_CONVERSACIONAL",
+      "solicitante": {
+        "tipo_documento": "CI",
+        "numero_documento": "4521987",
+        "nombres": "María Elena",
+        "primer_apellido": "Choque",
+        "segundo_apellido": "Alanoca",
+        "correo": "maria.choque@ejemplo.com.bo",
+        "celular": "72345678"
+      },
+      "datos": [
+        {
+          "campo": "departamento",
+          "valor": "Cochabamba"
+        },
+        {
+          "campo": "provincia",
+          "valor": "Cercado"
+        },
+        {
+          "campo": "municipio",
+          "valor": "Cochabamba"
+        },
+        {
+          "campo": "direccion",
+          "valor": "Calle Sucre N° 456"
+        },
+        {
+          "campo": "actividad",
+          "valor": "Transporte"
+        },
+        {
+          "campo": "producto",
+          "valor": "GASOLINA"
+        },
+        {
+          "campo": "volumen_litros",
+          "valor": 50
+        },
+        {
+          "campo": "uso_destino",
+          "valor": "Vehículo de reparto de mercadería"
+        }
+      ],
+      "adjuntos": [
+        {
+          "tipo": "FOTO_TITULAR_CON_CI",
+          "archivo": "maria_titular_con_ci.jpg",
+          "mime": "image/jpeg"
+        }
+      ],
+      "declaracion_jurada": true,
+      "estado": "APROBADO",
+      "fecha_registro": "2026-09-08T11:30:00Z",
+      "fecha_resolucion": "2026-09-09T16:20:00Z",
+      "motivo_rechazo": null
+    },
+    {
+      "codigo_tramite": "ANH-2026-000003",
+      "tramite": "ANH-REGISTRO-CONSUMO-FUERA-TANQUE",
+      "version_formulario": "1.0",
+      "canal_origen": "ASISTENTE_CONVERSACIONAL",
+      "solicitante": {
+        "tipo_documento": "CI",
+        "numero_documento": "9087654",
+        "nombres": "Rodrigo",
+        "primer_apellido": "Vargas",
+        "segundo_apellido": "Peñaranda",
+        "correo": "rodrigo.vargas@ejemplo.com.bo",
+        "celular": "73456789"
+      },
+      "datos": [
+        {
+          "campo": "departamento",
+          "valor": "Santa Cruz"
+        },
+        {
+          "campo": "provincia",
+          "valor": "Andrés Ibáñez"
+        },
+        {
+          "campo": "municipio",
+          "valor": "Santa Cruz de la Sierra"
+        },
+        {
+          "campo": "direccion",
+          "valor": "Av. Banzer N° 789"
+        },
+        {
+          "campo": "actividad",
+          "valor": "Construcción"
+        },
+        {
+          "campo": "producto",
+          "valor": "DIESEL"
+        },
+        {
+          "campo": "volumen_litros",
+          "valor": 110
+        },
+        {
+          "campo": "uso_destino",
+          "valor": "Generador eléctrico de obra"
+        }
+      ],
+      "adjuntos": [
+        {
+          "tipo": "FOTO_TITULAR_CON_CI",
+          "archivo": "rodrigo_titular_con_ci.jpg",
+          "mime": "image/jpeg"
+        }
+      ],
+      "declaracion_jurada": true,
+      "estado": "RECHAZADO",
+      "fecha_registro": "2026-09-05T08:45:00Z",
+      "fecha_resolucion": "2026-09-06T10:00:00Z",
+      "motivo_rechazo": "La fotografía del documento de identidad no es legible."
+    }
+  ]
+}
