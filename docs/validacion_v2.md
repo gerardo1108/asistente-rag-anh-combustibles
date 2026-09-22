@@ -7,7 +7,7 @@ Fecha: 22 de septiembre de 2026.
 - V1: etiqueta local `v0.1.0`, commit `3553700`.
 - Base V2: aporte de Helmuth, commit `9ab208c`.
 - Preparación: rama `integracion/v2-interfaz-helmuth`.
-- `main` permanece en la V1. No se ha creado `v0.2.0`.
+- Entrega estabilizada: `v0.2.0`, integrada en `main`; V1 conservada en `v0.1.0`.
 
 La interfaz y el flujo de `asistente-anh/` son la base acordada. La V1 se
 conserva como referencia histórica durante la transición.
@@ -81,8 +81,8 @@ sin prometer notificaciones. Son pruebas puntuales, no una garantía general
 de comportamiento del modelo.
 
 Evidencias y alcance: [Estabilización de la V2](estabilizacion_v2.md).
-Queda pendiente revisar el commit de cierre para incorporarlo a main y
-publicarlo como v0.2.0. Las reglas de volumen siguen siendo una limitación
+El cierre de esta estabilización corresponde a la entrega `v0.2.0` en `main`.
+Las reglas de volumen siguen siendo una limitación
 explícita del flujo V2, sin trasladar los límites simulados de V1.
 
 ## Activación y comprobación inicial del RAG

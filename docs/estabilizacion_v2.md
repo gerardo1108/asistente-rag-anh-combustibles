@@ -2,7 +2,7 @@
 
 ## Alcance
 
-Versión candidata para demostración académica con la interfaz y el flujo de
+Versión `v0.2.0` para demostración académica con la interfaz y el flujo de
 Helmuth. Conserva servicios ANH y Ciudadanía Digital simulados y generación
 RAG real mediante Groq. La V1 se conserva en la etiqueta `v0.1.0`.
 
@@ -87,6 +87,6 @@ en lugar de `docker compose`.
 
 ## Cierre de versión
 
-Esta estabilización no añade nuevas funciones. La integración a `main`, la
-publicación en GitHub y la etiqueta `v0.2.0` deben corresponder al commit
-revisado de cierre; no se presentan como realizadas en esta evidencia.
+Esta estabilización se entrega como `v0.2.0` en `main`, conservando la V1 en
+`v0.1.0`. El cierre incluye las correcciones y evidencias descritas arriba;
+las limitaciones documentadas permanecen vigentes.
