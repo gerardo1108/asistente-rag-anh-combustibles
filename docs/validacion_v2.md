@@ -18,7 +18,8 @@ conserva como referencia histórica durante la transición.
 - Volúmenes persistentes separados para ambas bases SQLite.
 - Puertos públicos configurables y compartidos por chat y supervisor.
 - README principal orientado a V2; instrucciones V1 identificadas como históricas.
-- `.env` local sin claves; backend en 18001 porque una instancia anterior ocupa 8001.
+- `.env` local con Groq configurado; backend en 18001 porque una instancia anterior ocupa 8001.
+  Las claves están excluidas de Git y no se incluyen en esta documentación.
 
 ## Evidencia
 
@@ -62,7 +63,7 @@ como sustituto de `docker compose`.
 
 ## Pendientes antes de v0.2.0
 
-1. Configurar las claves de Groq/Gemini localmente; levantar y evaluar el RAG.
+1. Ampliar la evaluación del RAG más allá de las tres comprobaciones iniciales.
 2. Completar la prueba visual de registro con foto, revisión y seguimiento.
    No hay un navegador conectado a la herramienta de verificación de esta sesión.
 3. Acordar las validaciones del flujo V2. Los límites simulados de V1 no se
@@ -71,5 +72,28 @@ como sustituto de `docker compose`.
    la reapertura de SQLite ya cubierta por pruebas.
 5. Revisar los resultados antes de incorporar la rama a main y etiquetar v0.2.0.
 
-No se ha validado generación LLM, recuperación Chroma ni biometría. El servicio
-RAG no está iniciado porque aún no se configuraron claves.
+## Activación y comprobación inicial del RAG
+
+Groq configurado con `LLM_PROVEEDORES=groq` y modelo `openai/gpt-oss-20b`.
+Autenticación y disponibilidad del modelo verificadas. Imagen Docker
+construida, índice Chroma generado con 8 fragmentos y servicio iniciado en
+http://localhost:8003. No se necesita clave de Gemini en este modo.
+
+Pruebas HTTP realizadas el 22 de septiembre de 2026:
+
+| Caso | Resultado | Tiempo observado |
+|---|---|---|
+| Información mínima del formulario | Respuesta de Groq, `encontrado=true`, 3 fuentes; el artículo 4 aparece primero | 0,71 s |
+| Receta de tarta de chocolate | Abstención, `encontrado=false`, sin fuentes | 0,71 s |
+| Estado de trámite sintético | Texto con código y estado REGISTRADO | 0,44 s |
+
+Evidencia completa: [validacion_rag_groq.json](evidencias/validacion_rag_groq.json).
+Son comprobaciones de funcionamiento sobre el corpus incluido, no una
+medición representativa de precisión ni una verificación jurídica del corpus.
+El texto de estado menciona una notificación futura aunque el prototipo solo
+ofrece consulta activa; revisar esa instrucción antes de la demostración final.
+La validación visual integral y la biometría no están verificadas.
+
+La primera construcción descargó dependencias grandes de PyTorch/CUDA aunque
+los embeddings se ejecutan en CPU. Queda como mejora reducir la imagen mediante
+una instalación de PyTorch para CPU; no impidió el arranque ni estas pruebas.

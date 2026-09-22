@@ -1,0 +1,47 @@
+[
+  {
+    "caso": "requisitos",
+    "segundos": 0.71,
+    "resultado": {
+      "respuesta": "La información mínima obligatoria en el Formulario Electrónico es:\n\n1. **Datos personales**: nombre, CI, domicilio y foto de rostro.  \n2. **Destino de uso del combustible**.  \n3. **Fotografías que solicite el formulario**.  \n\n*Esta respuesta es orientativa y no sustituye la interpretación oficial de la ANH.*",
+      "fuentes": [
+        {
+          "norma": "RAN-ANH-DJ-UGJN N° 0008/2025",
+          "articulo": "Artículo 4 — Registro en el Formulario Electrónico",
+          "fragmento": "**I.** Para el registro electrónico como consumidor de combustibles líquidos en bidones, tambores u otros envases aptos, es obligatorio el llenado del Formulario Electrónico con la información que justifique el consumo del combustible, misma que tendrá calidad de Declaración Jurada para los efectos legales que correspondan.  \n**II.** La información mínima y obligatoria que debe ser registrada en el Formulario Electrónico es la siguiente:  \na) Datos personales (nombre, CI, domicilio y foto de rostro).  \nb) Destino de uso del combustible.  \nc) Fotografías que solicite el formulario.  \n**III.** El registro del Formulario Electrónico concluye con la validación de los datos consignados por parte del consumidor, constituyéndose en Declaración Jurada."
+        },
+        {
+          "norma": "RAN-ANH-DJ-UGJN N° 0008/2025",
+          "articulo": "Artículo 1 — Objeto",
+          "fragmento": "El presente Reglamento Específico tiene por objeto establecer el registro electrónico de consumidores que adquieran combustibles líquidos en bidones, tambores u otros envases aptos, conforme lo dispuesto en la Disposición Adicional Única del Decreto Supremo N° 5400 de 23 de mayo de 2025 y en cumplimiento del Decreto Supremo N° 4910 de 12 de abril de 2023."
+        },
+        {
+          "norma": "RAN-ANH-DJ-UGJN N° 0008/2025",
+          "articulo": "Artículo 5 — Adquisición de combustibles sin Formulario Electrónico",
+          "fragmento": "La adquisición de combustibles líquidos en bidones, tambores u otro tipo de envases aptos a precio internacional y sin el registro en el Formulario Electrónico se viabilizará con la presentación del Carnet de Identidad (vigente) original y fotocopia simple del portador en su calidad de comprador, sujetos a los volúmenes establecidos en la normativa vigente."
+        }
+      ],
+      "encontrado": true,
+      "proveedor_llm": "groq",
+      "tiempo_respuesta_ms": 621
+    }
+  },
+  {
+    "caso": "fuera_alcance",
+    "segundos": 0.71,
+    "resultado": {
+      "respuesta": "No encuentro esa información en los documentos proporcionados.",
+      "fuentes": [],
+      "encontrado": false,
+      "proveedor_llm": null,
+      "tiempo_respuesta_ms": null
+    }
+  },
+  {
+    "caso": "estado",
+    "segundos": 0.44,
+    "resultado": {
+      "texto": "El trámite con código <strong>ANH-2026-000001</strong> está en estado <strong>REGISTRADO</strong>; se encuentra en revisión y se le notificará el resultado en la brevedad."
+    }
+  }
+]
