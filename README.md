@@ -1,3 +1,53 @@
+# Asistente ANH — V2 en integración
+
+La interfaz y el flujo propuestos por Helmuth son la base acordada para la
+segunda versión del prototipo académico. La aplicación está en
+[`asistente-anh/`](asistente-anh/README.md).
+
+- **V1 (`v0.1.0`):** prototipo inicial con interfaz original y recuperación local.
+- **V2 (en validación):** interfaz ciudadana y supervisor, servicios HTTP
+  simulados, SQLite y RAG con Chroma y Groq/Gemini.
+
+La V2 todavía no tiene etiqueta de entrega: `v0.2.0` se reservará para cuando
+se valide el recorrido completo, incluido el RAG.
+
+## Arranque de la V2
+
+Desde la raíz del repositorio:
+
+```bash
+cd asistente-anh
+cp .env.example .env  # solo la primera vez; completar las claves localmente
+# Registro y supervisión sin proveedores LLM:
+docker compose up -d --build backend-anh ciudadania-digital chat
+# Para incluir las consultas normativas, con las claves configuradas:
+docker compose up -d --build
+```
+
+Chat: http://localhost:8081 · Supervisor: http://localhost:8081/supervisor.
+La V1 puede seguir utilizando el puerto 8080. `CHAT_PORT` permite cambiar
+el puerto de la V2. Los servicios usan 8001, 8002 y 8003; deben estar libres.
+Sin el servicio RAG, las consultas normativas no están disponibles; el
+seguimiento dispone de un mensaje local de respaldo.
+
+Los puertos de los servicios se pueden configurar con `BACKEND_PORT`,
+`CIUDADANIA_PORT` y `RAG_PORT` en `.env`; Compose aplica los mismos valores
+al chat y al supervisor. Si 8001 está ocupado, usar `BACKEND_PORT=18001`.
+En este equipo se utilizó esa alternativa para conservar la instancia anterior.
+
+Las bases SQLite usan volúmenes de Docker y sobreviven a `docker compose down`.
+`docker compose down -v` elimina esos datos. Los servicios ANH y Ciudadanía
+Digital siguen siendo simulaciones; la carga de fotos no implica biometría.
+
+## Validación y evolución
+
+Consultar el [estado de validación de la V2](docs/validacion_v2.md) y las
+[instrucciones detalladas](asistente-anh/README.md).
+El código original se conserva temporalmente durante la transición. Las
+instrucciones siguientes corresponden exclusivamente a la **V1**.
+
+---
+
 # Asistente conversacional basado en arquitectura RAG para la orientación normativa ante la ANH
 
 ## Descripcion del Proyecto

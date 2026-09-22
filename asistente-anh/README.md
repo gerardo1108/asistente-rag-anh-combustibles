@@ -56,7 +56,33 @@ usa el contrato interno de supervisión.
 
 ---
 
-## Levantar el entorno
+## Arranque integrado de la V2
+
+Desde esta carpeta, crear `.env` a partir de `.env.example` solo si aún no
+existe. Completar las claves localmente para usar el RAG.
+
+```bash
+docker compose up -d --build
+```
+
+La interfaz se incluye en Compose: abrir http://localhost:8081 y
+http://localhost:8081/supervisor. `CHAT_PORT` cambia el puerto publicado.
+Para probar registro y supervisión sin RAG:
+
+```bash
+docker compose up -d --build backend-anh ciudadania-digital chat
+```
+
+Los puertos de los servicios se pueden configurar con `BACKEND_PORT`,
+`CIUDADANIA_PORT` y `RAG_PORT` en `.env`; Compose aplica los mismos valores
+al chat y al supervisor. Si 8001 está ocupado, usar `BACKEND_PORT=18001`.
+En este equipo se utilizó esa alternativa para conservar la instancia anterior.
+
+Las bases SQLite se guardan en volúmenes persistentes. `docker compose down`
+conserva los datos; agregar `-v` los elimina. El índice RAG se construye en
+la imagen Docker; la ingesta manual de abajo corresponde a ejecución local.
+
+## Levantar el entorno manualmente
 
 Requiere Docker y Docker Compose para los tres servicios backend, y Python
 para la interfaz de chat (corre local, aparte).

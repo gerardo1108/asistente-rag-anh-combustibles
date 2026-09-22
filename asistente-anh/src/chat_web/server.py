@@ -5,10 +5,11 @@ directamente desde la raíz del repo, `catalogos/` y `recursos/` — la misma
 fuente de datos que ya usa `src/chat` (Streamlit), sin duplicarla.
 """
 
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 # server.py -> chat_web/ -> src/ -> raíz del repo
@@ -24,6 +25,16 @@ async def sin_cache(request: Request, call_next):
     respuesta = await call_next(request)
     respuesta.headers["Cache-Control"] = "no-store"
     return respuesta
+
+
+@app.get("/configuracion-servicios.js")
+def configuracion_servicios():
+    # Solo puertos públicos; nunca exponer claves de proveedores en el navegador.
+    puertos = {"PUERTO_BACKEND": int(os.getenv("BACKEND_PORT", "8001")),
+               "PUERTO_CIUDADANIA": int(os.getenv("CIUDADANIA_PORT", "8002")),
+               "PUERTO_RAG": int(os.getenv("RAG_PORT", "8003"))}
+    return Response("\n".join(f"export const {nombre} = {puerto};" for nombre, puerto in puertos.items()),
+                    media_type="application/javascript")
 
 
 # Los mounts específicos van antes que el catch-all "/": Starlette resuelve
