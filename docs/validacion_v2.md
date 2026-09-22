@@ -61,16 +61,29 @@ En este Mac el CLI de Homebrew no detecta el complemento Compose. Se utilizó
 `/Applications/Docker.app/Contents/Resources/cli-plugins/docker-compose`
 como sustituto de `docker compose`.
 
-## Pendientes antes de v0.2.0
+## Cierre de estabilización
 
-1. Ampliar la evaluación del RAG más allá de las tres comprobaciones iniciales.
-2. Completar la prueba visual de registro con foto, revisión y seguimiento.
-   No hay un navegador conectado a la herramienta de verificación de esta sesión.
-3. Acordar las validaciones del flujo V2. Los límites simulados de V1 no se
-   trasladaron automáticamente a la propuesta de Helmuth.
-4. Verificar conservación de solicitudes al recrear contenedores, además de
-   la reapertura de SQLite ya cubierta por pruebas.
-5. Revisar los resultados antes de incorporar la rama a main y etiquetar v0.2.0.
+La prueba visual completa fue comunicada como positiva por el usuario.
+Se verificó persistencia tras recrear los contenedores: las cinco solicitudes
+conservaron los detalles completos, incluidos adjuntos y estados, comparados
+mediante SHA-256. Una corresponde a una prueba técnica de persistencia,
+identificada como Prueba Persistencia; se conserva como evidencia.
+
+La evaluación ampliada incluyó seis consultas: requisitos, fotografías,
+pregunta dependiente del contexto, tema ajeno, dato personal ausente y límite
+de volumen no documentado. Cinco comprobaciones automáticas se aprobaron;
+el sexto caso se revisó manualmente y produjo abstención sin inventar cifras.
+La revisión de las seis respuestas finales no encontró los ejemplos de
+fotografías no sustentados observados en la ejecución inicial.
+
+Tres solicitudes de texto de estado REGISTRADO invitaron a consultar de nuevo,
+sin prometer notificaciones. Son pruebas puntuales, no una garantía general
+de comportamiento del modelo.
+
+Evidencias y alcance: [Estabilización de la V2](estabilizacion_v2.md).
+Queda pendiente revisar el commit de cierre para incorporarlo a main y
+publicarlo como v0.2.0. Las reglas de volumen siguen siendo una limitación
+explícita del flujo V2, sin trasladar los límites simulados de V1.
 
 ## Activación y comprobación inicial del RAG
 
@@ -90,9 +103,9 @@ Pruebas HTTP realizadas el 22 de septiembre de 2026:
 Evidencia completa: [validacion_rag_groq.json](evidencias/validacion_rag_groq.json).
 Son comprobaciones de funcionamiento sobre el corpus incluido, no una
 medición representativa de precisión ni una verificación jurídica del corpus.
-El texto de estado menciona una notificación futura aunque el prototipo solo
-ofrece consulta activa; revisar esa instrucción antes de la demostración final.
-La validación visual integral y la biometría no están verificadas.
+La evidencia inicial conserva el mensaje antiguo de notificación. Ese mensaje
+fue corregido y verificado en el cierre de estabilización. La prueba visual
+fue confirmada por el usuario; la biometría no forma parte de esta versión.
 
 La primera construcción descargó dependencias grandes de PyTorch/CUDA aunque
 los embeddings se ejecutan en CPU. Queda como mejora reducir la imagen mediante

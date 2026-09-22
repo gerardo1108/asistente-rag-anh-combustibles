@@ -4,7 +4,7 @@ import { ApiError, consultarEstado, generarTextoEstado } from "./api-client.js";
 import { crearBurbuja, crearBurbujaFormulario } from "./componentes.js";
 
 const DESCRIPCION_ESTADO = {
-  REGISTRADO: "Está pendiente de evaluación.",
+  REGISTRADO: "Está pendiente de evaluación. Puede volver a consultar su estado con el código del trámite.",
   APROBADO: "El trámite fue aprobado.",
   RECHAZADO: "El trámite fue rechazado.",
 };

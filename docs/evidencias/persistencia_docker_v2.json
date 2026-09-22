@@ -1,0 +1,7 @@
+{
+  "codigo_prueba": "ANH-2026-D1CCA6",
+  "solicitudes_antes": 5,
+  "solicitudes_despues": 5,
+  "todos_los_detalles_previos_conservados": true,
+  "metodo": "SHA-256 de cada detalle completo antes y después de recrear contenedores; incluye adjuntos y estados"
+}

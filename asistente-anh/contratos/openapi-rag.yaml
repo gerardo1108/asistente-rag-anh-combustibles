@@ -188,7 +188,7 @@ components:
           description: >
             Un solo párrafo en HTML mínimo (solo `<strong>` alrededor del
             código y el estado), listo para mostrar en la burbuja del bot.
-          example: "El trámite <strong>ANH-2026-000001</strong> está <strong>REGISTRADO</strong> y se encuentra en revisión. Te notificaremos el resultado."
+          example: "El trámite <strong>ANH-2026-000001</strong> está <strong>REGISTRADO</strong> y se encuentra en revisión. Puedes volver a consultar su estado con el código del trámite."
 
     Error:
       type: object

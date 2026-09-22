@@ -29,6 +29,8 @@ def _texto_fallback(payload: GenerarTextoEstadoRequest) -> str:
     frontend lo renderice igual."""
     descripcion = _DESCRIPCION_FALLBACK[payload.estado]
     texto = f"El trámite <strong>{_escapar(payload.codigo)}</strong> <strong>{payload.estado}</strong> {descripcion}."
+    if payload.estado == "REGISTRADO":
+        texto += " Puede volver a consultar su estado con el código del trámite."
     if payload.estado == "RECHAZADO" and payload.motivo_rechazo:
         texto += f" Motivo: {_escapar(payload.motivo_rechazo)}."
     return texto

@@ -41,6 +41,9 @@ Digital siguen siendo simulaciones; la carga de fotos no implica biometría.
 
 ## Validación y evolución
 
+El cierre de la demostración y las limitaciones están documentados en
+[Estabilización de la V2](docs/estabilizacion_v2.md).
+
 Consultar el [estado de validación de la V2](docs/validacion_v2.md) y las
 [instrucciones detalladas](asistente-anh/README.md).
 El código original se conserva temporalmente durante la transición. Las
