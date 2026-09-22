@@ -1,15 +1,20 @@
-# Asistente ANH — V2 · v0.2.0
+# Asistente ANH — V2 · v0.2.1
 
 La interfaz y el flujo propuestos por Helmuth son la base acordada para la
 segunda versión del prototipo académico. La aplicación está en
 [`asistente-anh/`](asistente-anh/README.md).
 
 - **V1 (`v0.1.0`):** prototipo inicial con interfaz original y recuperación local.
-- **V2 (`v0.2.0`):** interfaz ciudadana y supervisor, servicios HTTP
+- **V2 (`v0.2.1`):** interfaz ciudadana y supervisor, servicios HTTP
   simulados, SQLite y RAG con Chroma y Groq/Gemini.
 
-La entrega `v0.2.0` recoge la V2 estabilizada para demostración académica,
-con pruebas del flujo, persistencia y RAG. No es una versión de producción.
+La entrega `v0.2.1` añade la imagen RAG para CPU y respuestas normativas
+compuestas por extractos verificables. La prueba de interfaz fue confirmada
+como positiva por el usuario. `v0.2.0` conserva la entrega anterior.
+No es una versión de producción.
+
+Detalles: [fidelidad del RAG](docs/fidelidad_rag.md) y
+[medición de recursos](docs/optimizacion_rag_cpu.md).
 
 ## Arranque de la V2
 

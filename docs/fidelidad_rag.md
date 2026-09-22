@@ -86,8 +86,15 @@ universal del sistema.
 La imagen validada se activó en el servicio RAG local (puerto 8003) para que la
 interfaz habitual en http://localhost:8081 use la nueva respuesta extractiva.
 Se retiró el contenedor temporal de pruebas. No se modificaron las bases de
-datos de solicitudes. Los cambios están en `mejora/fidelidad-rag`, sin publicar
-ni integrar a `main`; la etiqueta `v0.2.0` conserva la entrega anterior.
+datos de solicitudes. Los cambios se entregan como `v0.2.1` en `main`;
+la etiqueta `v0.2.0` conserva la entrega anterior.
+
+## Aceptación de la interfaz y cierre
+
+El usuario comunicó que las pruebas de la nueva respuesta extractiva resultaron
+positivas. Esta aceptación se registra como validación manual declarada, sin
+atribuirle capturas o pruebas automatizadas adicionales. La entrega `v0.2.1`
+incluye esta mejora y la optimización CPU; conserva las limitaciones siguientes.
 
 ## Límites
 

@@ -2,9 +2,9 @@
 
 ## Alcance
 
-Trabajo en `optimizacion/rag-cpu`, posterior a `v0.2.0`. No se modificó esa
-etiqueta ni se crearon recursos en Google Cloud. El servicio habitual de la
-V2 conserva su imagen; las mediciones usan contenedores temporales separados.
+Trabajo originado en `optimizacion/rag-cpu`, incorporado a `v0.2.1`. No se modificó esa
+etiqueta ni se crearon recursos en Google Cloud. Las mediciones se realizaron con contenedores temporales separados; después
+se activó la imagen CPU junto con la mejora de fidelidad del RAG.
 
 ## Cambios
 
@@ -67,7 +67,8 @@ ese detalle pese al refuerzo del prompt. Este ensayo no establece que lo cause
 el cambio de PyTorch: se observó ese comportamiento antes de la optimización y
 la generación no es determinista. No se declara resuelta la fidelidad total al
 corpus ni se considera suficiente comprobar solo `encontrado` y `fuentes`.
-Es un pendiente de calidad independiente para revisar antes de una exposición pública.
+Ese hallazgo motivó la [mejora posterior de fidelidad](fidelidad_rag.md),
+incorporada también a v0.2.1. Esta evidencia conserva el resultado previo.
 
 ## Reproducir
 
