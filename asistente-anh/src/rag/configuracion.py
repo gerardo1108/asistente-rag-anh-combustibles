@@ -81,4 +81,4 @@ def k_resultados() -> int:
 
 
 def umbral_similitud() -> float:
-    return float(os.environ.get("RAG_UMBRAL_SIMILITUD", "0.45"))
+    return float(os.environ.get("RAG_UMBRAL_SIMILITUD", "0.40"))

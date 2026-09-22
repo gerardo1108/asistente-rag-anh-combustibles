@@ -17,7 +17,9 @@ paths:
       summary: Consulta al motor de recuperación aumentada
       description: >
         Recibe una pregunta en lenguaje natural y devuelve una respuesta
-        fundamentada en el corpus normativo, junto con las fuentes citadas.
+        compuesta por extractos literales del corpus normativo, junto con las
+        fuentes seleccionadas. El servidor valida los identificadores de los
+        fragmentos y no publica redacción libre del modelo en esta ruta.
         Si no encuentra información relevante, se abstiene explícitamente
         en lugar de inventar contenido.
       requestBody:

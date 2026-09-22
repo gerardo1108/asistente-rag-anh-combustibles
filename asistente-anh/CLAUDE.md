@@ -258,7 +258,7 @@ Opcionales, con default razonable:
 | `RAG_RUTA_INDICE` | `rag_index/` en la raíz | Carpeta donde persiste el índice Chroma. |
 | `RAG_MODELO_EMBEDDINGS` | `paraphrase-multilingual-MiniLM-L12-v2` | Modelo HuggingFace de embeddings. |
 | `RAG_K_RESULTADOS` | `3` | Cuántos chunks recuperar antes de filtrar por umbral. |
-| `RAG_UMBRAL_SIMILITUD` | `0.3` | Umbral mínimo de similitud. Si la primera búsqueda no supera el umbral, se reintenta una vez con la pregunta reformulada por un LLM (fallback de retrieval); si tampoco, el servicio se abstiene sin generar una respuesta. |
+| `RAG_UMBRAL_SIMILITUD` | `0.40` | Umbral mínimo de similitud. Si la primera búsqueda no supera el umbral, se reintenta una vez con la pregunta reformulada por un LLM (fallback de retrieval); si tampoco, el servicio se abstiene sin generar una respuesta. |
 
 ### SDK de Gemini
 

@@ -146,6 +146,13 @@ Motor de recuperación aumentada sobre el corpus normativo
 abstiene explícitamente cuando no encuentra información relevante, en vez de
 inventar contenido.
 
+En la rama de mejora de fidelidad, las respuestas normativas son extractivas:
+el modelo selecciona fragmentos y el servidor reproduce su texto, con las
+fuentes seleccionadas. Una salida libre o selección inválida se convierte en
+abstención. Esto conserva la evidencia literal, pero puede dar respuestas más
+largas y no garantiza que la selección sea siempre pertinente. El texto de
+seguimiento de trámites mantiene su generación independiente.
+
 El índice **no** se reconstruye en cada arranque — es un paso manual:
 
 ```bash
