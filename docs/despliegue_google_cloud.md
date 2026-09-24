@@ -1,5 +1,8 @@
 # Guia de despliegue temporal en Google Cloud Run
 
+> Documento histórico de otra arquitectura. Para la V2 de cuatro servicios y
+> pruebas con usuarios, consultar el [plan vigente](despliegue_pruebas_equipo.md).
+
 ## Estado del documento
 
 Propuesta tecnica para revision del equipo. No representa una decision final.

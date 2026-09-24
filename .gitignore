@@ -223,3 +223,32 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Respaldos y estado local de pruebas en nube
+/.local/
+
+# Configuración privada, bases y respaldos de pruebas
+.env.*
+!.env.example
+!.env.template
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+*.pem
+*.key
+*service-account*.json
+credentials*.json
+
+# Bitácoras operativas y evidencia sin sanitizar: conservar solo localmente
+/docs/prueba_cloud_20260924.md
+/docs/revision_deploy_costos.md
+/docs/evidencias/prueba_cloud_20260924.json
+/docs/evidencias/rag_cloud_20260924.json
+/docs/privado/

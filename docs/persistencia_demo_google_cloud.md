@@ -3,6 +3,11 @@
 Estado: propuesta de arquitectura; no se han creado recursos ni migrado datos.
 Base funcional: `v0.2.1`.
 
+> Actualización posterior: se validó y retiró una VM de prueba. Para próximas
+> sesiones se propone recrear la VM y conservar respaldos privados locales.
+> Ver el [plan vigente para el equipo](despliegue_pruebas_equipo.md).
+> El contenido siguiente conserva la comparación de alternativas previa.
+
 ## Requisito confirmado
 
 El usuario eligió conservar **las solicitudes y fotografías de prueba durante
@@ -25,13 +30,19 @@ los recursos de forma explícita.
 - La interfaz permite cargar imágenes, pero no aplica actualmente un límite
   de tamaño en bytes ni el backend tiene un límite explícito por adjunto.
 
-## Recomendación para esta etapa
+## Recomendación para esta etapa: decisión pendiente
 
 **Una VM temporal de Compute Engine con Docker Compose y un disco persistente
 para datos.** Es una recomendación por menor cambio de código y continuidad
 con la demo validada, no una afirmación de que sea la opción de menor factura
 para cualquier patrón de uso. Cloud Run sigue siendo alternativa si se prefiere
 adaptar el almacenamiento para operación sin servidor.
+
+Si la prioridad es mantener un enlace disponible para visitas ocasionales sin
+horarios acordados, evaluar primero **Cloud Run con almacenamiento externo**.
+Si la prioridad es publicar pronto para sesiones programadas, evaluar una
+**VM que se detenga entre sesiones**. Comparar ambos presupuestos antes de
+elegir; no se ha aprobado ni implementado ninguna de estas arquitecturas.
 
 Propuesta de funcionamiento:
 
@@ -114,6 +125,61 @@ adjuntos base64 actuales directamente a documentos no es una solución general.
 
 ## Control del crecimiento y costos
 
+### Consumo medido frente a capacidad contratada
+
+La VM no reduce el trabajo del RAG: aloja los mismos servicios y añade el
+sistema operativo y Docker. Los **4 GiB sugeridos son capacidad para presupuestar
+y probar el conjunto**, no consumo medido ni requisito definitivo. El RAG solo
+registró una mediana RSS de 1204 MiB tras consulta y un pico cgroup de 1299 MiB,
+con un límite de 2 GiB. No se midió el conjunto bajo concurrencia en Google Cloud.
+Ver [método y límites de la medición local](optimizacion_rag_cpu.md).
+
+En una VM encendida se factura la capacidad asignada aunque el chat no reciba
+visitas. Detenerla interrumpe el servicio y el cobro de cómputo; los discos y
+otros recursos retenidos pueden seguir generando cargos.
+[Comportamiento al detener Compute Engine](https://docs.cloud.google.com/compute/docs/reference/rest/v1/instances/stop).
+
+### Comparación por patrón de uso
+
+| Criterio | VM con horario limitado | Cloud Run con persistencia externa |
+|---|---|---|
+| Uso previsto | Reuniones, pruebas y evaluación programadas | Visitas ocasionales en cualquier momento |
+| Disponibilidad | Fuera de línea cuando la VM está detenida | Una solicitud puede activar una instancia desde cero |
+| Cómputo sin visitas | Se cobra si se deja encendida | Puede escalar a cero con mínimo de instancias en cero |
+| Datos hasta la evaluación | SQLite en disco persistente y respaldos | Firestore para registros y Cloud Storage para fotos, como alternativa propuesta |
+| Cambios de aplicación | Montajes, configuración y operación de Compose | Adaptar persistencia, adjuntos, consultas e idempotencia |
+| Operación | Arranque/parada, mantenimiento del sistema y backups | Configurar escalado, permisos, almacenamiento y recuperación |
+| Latencia inicial | Encender y comprobar servicios antes de la sesión | Puede haber espera por arranque en frío |
+| Costos que permanecen | Discos, respaldos, imágenes y otros recursos retenidos | Almacenamiento, operaciones, imágenes y otros servicios utilizados |
+
+Para evaluar Cloud Run con uso esporádico, proponer facturación basada en
+solicitudes, mínimo de instancias en cero y un máximo ajustado a pruebas de
+capacidad. Escalar a cero no implica factura total cero ni elimina el costo de
+almacenar los datos. La primera visita puede esperar el arranque del RAG; los
+7,098 s medidos localmente no predicen ese tiempo en Cloud Run.
+[Escalado y arranque desde cero](https://docs.cloud.google.com/run/docs/about-instance-autoscaling),
+[modalidades de facturación](https://cloud.google.com/run/pricing).
+
+### Escenarios que se deben presupuestar
+
+1. **VM por sesiones:** como ejemplo ilustrativo, 10 sesiones de 2 horas suman
+   20 horas, más preparación y respaldos. El disco se conserva todo el mes.
+2. **VM continua:** un mes de 30 días encendida suma 720 horas. Esto representa
+   36 veces las horas del ejemplo de 20 horas, no 36 veces la factura total,
+   porque hay costos de almacenamiento y otros componentes.
+3. **Cloud Run ocasional:** estimar solicitudes y tiempo facturable de cada
+   servicio, CPU/memoria asignadas, operaciones de base de datos, tamaño de
+   fotos, red y respaldos. El número de visitas por sí solo no determina el costo.
+
+No se asignan importes ni se garantiza una opción más barata: faltan región,
+duración del proyecto, horas de disponibilidad, volumen y concurrencia esperados.
+Incluir también construcción y registro de imágenes, registros de operación,
+secretos y uso del proveedor Groq cuando corresponda. Separar costo de nube
+del esfuerzo de migración y mantenimiento. Referencias consultadas el 22 de
+septiembre de 2026; verificar tarifas al elaborar el presupuesto.
+
+### Límite de adjuntos
+
 Antes de exponer la demo, proponer un límite de **2 MiB por foto**, validado en
 cliente y servidor, además de un máximo de petición. No está implementado en
 v0.2.1. La política concreta de cantidad de adjuntos debe respetar los contratos.
@@ -135,9 +201,10 @@ usar poco el chat o por disponer de créditos académicos.
 
 ## Preparación pendiente antes del despliegue
 
-1. Acordar esta elección entre VM temporal y Cloud Run con almacenamiento externo.
-2. Elegir región, duración, horas de uso y número esperado de solicitudes/fotos;
-   con eso elaborar la estimación de costos y presupuesto.
+1. Definir región, duración, disponibilidad y número esperado de solicitudes/fotos;
+   presupuestar VM por sesiones y Cloud Run con almacenamiento externo.
+2. Elegir la arquitectura comparando factura, esfuerzo de adaptación y tiempo
+   de arranque aceptable para los evaluadores.
 3. Preparar montajes persistentes, backups y prueba de restauración local.
 4. Adaptar URLs locales a rutas HTTPS y un punto de entrada; los puertos 8001–8003
    no deben quedar expuestos como sustituto de autenticación. Restringir acceso

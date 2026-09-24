@@ -44,6 +44,12 @@ Las bases SQLite usan volúmenes de Docker y sobreviven a `docker compose down`.
 `docker compose down -v` elimina esos datos. Los servicios ANH y Ciudadanía
 Digital siguen siendo simulaciones; la carga de fotos no implica biometría.
 
+## Pruebas compartidas en Google Cloud
+
+Consultar el [plan de despliegue para usuarios y equipo](docs/despliegue_pruebas_equipo.md).
+La prueba técnica temporal ya se cerró. La publicación con HTTPS y permisos
+para participantes y supervisores está pendiente de implementación.
+
 ## Validación y evolución
 
 El cierre de la demostración y las limitaciones están documentados en
