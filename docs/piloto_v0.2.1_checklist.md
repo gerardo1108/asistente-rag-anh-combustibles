@@ -1,6 +1,6 @@
 # Checklist del piloto v0.2.1
 
-Esta lista prepara la ejecución del paquete de pruebas `Paquete_pruebas_MVP_V2.docx` y el registro `Registro_validacion_MVP_V2.xlsx`. La versión de referencia es el commit `f8b2ec3` de la rama `plan/persistencia-demo`.
+Esta lista prepara la ejecución del paquete de pruebas `Paquete_pruebas_MVP_V2.docx` y el registro `Registro_validacion_MVP_V2.xlsx`. La versión de referencia es el commit `02f47b1` de la rama `plan/persistencia-demo`.
 
 ## Comprobaciones ya realizadas
 
@@ -14,11 +14,15 @@ Esta lista prepara la ejecución del paquete de pruebas `Paquete_pruebas_MVP_V2.
 - [x] `RAG_UMBRAL_SIMILITUD` tiene valor predeterminado `0.40`.
 - [x] `scripts/cloud/tunnel.sh` pasa la validación de sintaxis.
 - [x] `scripts/cloud/smoke_test.py` pasa la compilación sintáctica.
+- [x] Compose local levantó los cuatro servicios con persistencia SQLite.
+- [x] El smoke test local confirmó el flujo y la recuperación del adjunto.
+- [x] El acceso remoto HTTPS funcionó mediante Quick Tunnel.
+- [x] El proxy de una sola URL respondió para Backend, Ciudadanía Digital y RAG.
 
 ## Comprobaciones pendientes en la VM
 
 - [ ] Confirmar que la VM corresponde al proyecto, zona e instancia autorizados.
-- [ ] Confirmar que la imagen desplegada corresponde al commit `f8b2ec3`.
+- [ ] Confirmar que la imagen desplegada corresponde al commit `02f47b1`.
 - [ ] Definir el proveedor LLM y registrar la configuración usada en la sesión.
 - [ ] Levantar los servicios con `scripts/cloud/compose.test.yml`.
 - [ ] Confirmar que los servicios solo escuchan en `127.0.0.1` dentro de la VM.
@@ -52,4 +56,4 @@ Esta lista prepara la ejecución del paquete de pruebas `Paquete_pruebas_MVP_V2.
 
 ## Criterio de salida
 
-El piloto puede comenzar cuando todas las comprobaciones pendientes en la VM estén marcadas, el smoke test sea satisfactorio y la configuración quede asociada al commit `f8b2ec3`. Los resultados del piloto deben incorporarse después de la ejecución, nunca antes.
+El piloto puede comenzar cuando el Compose esté levantado, el smoke test sea satisfactorio y la configuración quede asociada al commit `02f47b1`. Los resultados del piloto deben incorporarse después de la ejecución, nunca antes.
