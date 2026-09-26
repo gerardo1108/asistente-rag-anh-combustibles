@@ -1,0 +1,41 @@
+services:
+  backend-anh:
+    build:
+      context: .
+      dockerfile: src/sistemas_externos/backend_anh/Dockerfile
+    ports: ["127.0.0.1:8001:8001"]
+    environment:
+      PERMITIR_REINICIO: "false"
+      ANH_DB_PATH: /app/datos/backend_anh.db
+    volumes: ["backend-datos:/app/datos"]
+    restart: unless-stopped
+  ciudadania-digital:
+    build:
+      context: .
+      dockerfile: src/sistemas_externos/ciudadania_digital/Dockerfile
+    ports: ["127.0.0.1:8002:8002"]
+    environment:
+      PERMITIR_REINICIO: "false"
+      CD_DB_PATH: /app/datos/ciudadania_digital.db
+    volumes: ["ciudadania-datos:/app/datos"]
+    restart: unless-stopped
+  rag:
+    build:
+      context: .
+      dockerfile: src/rag/Dockerfile
+    ports: ["127.0.0.1:8003:8003"]
+    env_file: [.env]
+    restart: unless-stopped
+  chat:
+    build:
+      context: .
+      dockerfile: src/chat_web/Dockerfile
+    ports: ["127.0.0.1:8080:8080"]
+    environment:
+      BACKEND_PORT: "18001"
+      CIUDADANIA_PORT: "18002"
+      RAG_PORT: "18003"
+    restart: unless-stopped
+volumes:
+  backend-datos:
+  ciudadania-datos:
