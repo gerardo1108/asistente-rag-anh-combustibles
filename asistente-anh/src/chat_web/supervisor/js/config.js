@@ -1,6 +1,4 @@
-import { PUERTO_BACKEND } from "/configuracion-servicios.js";
-
-export const URL_BACKEND_ANH = `http://${window.location.hostname}:${PUERTO_BACKEND}`;
+import { URL_BACKEND_ANH } from "/configuracion-servicios.js";
 
 // El mock acepta cualquier valor no vacío; se manda igual para satisfacer
 // el header que exige verificar_clave_supervision.

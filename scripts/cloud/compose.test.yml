@@ -32,9 +32,9 @@ services:
       dockerfile: src/chat_web/Dockerfile
     ports: ["127.0.0.1:${CHAT_HOST_PORT:-8080}:8080"]
     environment:
-      BACKEND_PORT: "${BACKEND_PORT:-8001}"
-      CIUDADANIA_PORT: "${CIUDADANIA_PORT:-8002}"
-      RAG_PORT: "${RAG_PORT:-8003}"
+      BACKEND_URL: "http://backend-anh:8001"
+      CIUDADANIA_URL: "http://ciudadania-digital:8002"
+      RAG_URL: "http://rag:8003"
     restart: unless-stopped
 volumes:
   backend-datos:
