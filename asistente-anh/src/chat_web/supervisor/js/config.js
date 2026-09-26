@@ -1,4 +1,4 @@
-import { URL_BACKEND_ANH } from "/configuracion-servicios.js";
+export const URL_BACKEND_ANH = "/api/backend";
 
 // El mock acepta cualquier valor no vacío; se manda igual para satisfacer
 // el header que exige verificar_clave_supervision.
