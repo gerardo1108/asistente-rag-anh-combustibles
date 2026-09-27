@@ -16,7 +16,8 @@
  * Streamlit; en el DOM no existe ese problema.
  */
 
-import { ApiError, registrarSolicitud, verificarCiudadania } from "./api-client.js";
+import { ApiError, registrarSolicitud, validarImagen, verificarCiudadania } from "./api-client.js";
+import { VALIDACION_IMAGENES_ACTIVA } from "./config.js";
 import { cargarActividades, cargarUbicaciones } from "./catalogos.js";
 import { generarUUID } from "./util.js";
 import { crearBurbuja, crearBurbujaFormulario } from "./componentes.js";
@@ -188,6 +189,7 @@ async function agregarPaso2() {
       <select id="sel-producto"></select>
       <label for="input-volumen">Volumen (litros)</label>
       <input type="number" id="input-volumen" min="0" step="1" />
+      <div id="mensaje-volumen"></div>
       <label for="input-uso">Uso / destino del combustible</label>
       <textarea id="input-uso"></textarea>
       <button id="boton-continuar-paso2" class="boton-primario">Continuar</button>
@@ -201,6 +203,9 @@ async function agregarPaso2() {
   const selDepartamento = nodo.querySelector("#sel-departamento");
   const selProvincia = nodo.querySelector("#sel-provincia");
   const selMunicipio = nodo.querySelector("#sel-municipio");
+  const inputVolumen = nodo.querySelector("#input-volumen");
+  const mensajeVolumenDiv = nodo.querySelector("#mensaje-volumen");
+  let maximoLitros = null;
 
   llenarSelect(selDepartamento, Object.keys(ubicaciones), { placeholder: "Elegir..." });
   llenarSelect(nodo.querySelector("#sel-actividad"), actividades, { placeholder: "Elegir..." });
@@ -215,6 +220,30 @@ async function agregarPaso2() {
     }
     llenarSelect(selMunicipio, Object.keys(ubicaciones[departamento][provincia]), { placeholder: "Elegir..." });
   };
+  const actualizarLimiteVolumen = () => {
+    const municipio = ubicaciones[selDepartamento.value]?.[selProvincia.value]?.[selMunicipio.value];
+    if (!municipio) {
+      maximoLitros = null;
+      inputVolumen.removeAttribute("max");
+      mensajeVolumenDiv.innerHTML = "";
+      return;
+    }
+    maximoLitros = municipio.es_frontera ? 50 : 120;
+    inputVolumen.max = String(maximoLitros);
+    mensajeVolumenDiv.innerHTML = `<p class="texto-aviso">Límite aplicable: ${maximoLitros} litros.</p>`;
+    validarVolumen();
+  };
+  const validarVolumen = () => {
+    const valor = parseFloat(inputVolumen.value);
+    if (maximoLitros !== null && valor > maximoLitros) {
+      mensajeVolumenDiv.innerHTML = `<p class="texto-error">El volumen no puede superar los ${maximoLitros} litros.</p>`;
+      return false;
+    }
+    if (maximoLitros !== null) {
+      mensajeVolumenDiv.innerHTML = `<p class="texto-aviso">Límite aplicable: ${maximoLitros} litros.</p>`;
+    }
+    return true;
+  };
   const repoblarProvincias = () => {
     const departamento = selDepartamento.value;
     if (!departamento) {
@@ -228,6 +257,8 @@ async function agregarPaso2() {
 
   selDepartamento.addEventListener("change", repoblarProvincias);
   selProvincia.addEventListener("change", repoblarMunicipios);
+  selMunicipio.addEventListener("change", actualizarLimiteVolumen);
+  inputVolumen.addEventListener("input", validarVolumen);
   repoblarProvincias();
 
   nodo.querySelector("#boton-continuar-paso2").addEventListener("click", () => {
@@ -255,6 +286,7 @@ async function agregarPaso2() {
         `<p class="texto-aviso">Completá todos los desplegables, dirección y uso/destino, y el volumen debe ser mayor a cero.</p>`;
       return;
     }
+    if (!validarVolumen()) return;
 
     estado.campos = {
       departamento,
@@ -376,6 +408,22 @@ function agregarPaso3() {
     estado.fotoBase64 = dataUrl.split(",")[1];
     estado.fotoNombre = archivo.name;
     estado.fotoMime = archivo.type || "image/jpeg";
+    if (VALIDACION_IMAGENES_ACTIVA) {
+      boton.disabled = true;
+      try {
+        const resultado = await validarImagen(estado.fotoBase64, estado.fotoMime, estado.fotoNombre);
+        if (resultado.veredicto !== "VALIDA") {
+          nodo.querySelector("#mensaje-paso3").innerHTML = `<p class="texto-error">${resultado.motivo || "La imagen no cumple los requisitos."}</p>`;
+          boton.disabled = false;
+          return;
+        }
+      } catch (error) {
+        const mensaje = error instanceof ApiError ? error.mensaje : "No se pudo validar la imagen.";
+        nodo.querySelector("#mensaje-paso3").innerHTML = `<p class="texto-error">${mensaje}</p>`;
+        boton.disabled = false;
+        return;
+      }
+    }
     congelar(nodo);
     contenedorMensajes.appendChild(
       crearBurbuja("asistente", "Gracias, recibí tu foto. Antes de enviar tu solicitud, revisá que los datos estén correctos."),

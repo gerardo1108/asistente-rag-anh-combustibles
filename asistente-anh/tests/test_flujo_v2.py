@@ -73,5 +73,8 @@ def test_puerto_publico_configurable_sin_exponer_secretos(monkeypatch):
     with TestClient(chat) as cliente:
         respuesta = cliente.get("/configuracion-servicios.js")
         assert respuesta.status_code == 200
-        assert "PUERTO_BACKEND = 18001" in respuesta.text
+        assert "URL_BACKEND_ANH = '/api/backend'" in respuesta.text
+        assert "URL_CIUDADANIA_DIGITAL = '/api/ciudadania'" in respuesta.text
+        assert "URL_RAG = '/api/rag'" in respuesta.text
+        assert "18001" not in respuesta.text
         assert "secreto-de-prueba" not in respuesta.text

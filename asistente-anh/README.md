@@ -141,6 +141,11 @@ Cada servicio expone además su documentación interactiva en `/docs`
 
 ## Servicio RAG
 
+Para la revisión manual del pipeline se dispone de una lista de preguntas en
+[`src/rag/evaluacion/preguntas-rag.md`](src/rag/evaluacion/preguntas-rag.md).
+La lista es material de evaluación y debe usarse junto con la versión del
+corpus declarada para cada experimento.
+
 Motor de recuperación aumentada sobre el corpus normativo
 (`src/rag/corpus`, `.md` chunkeado por artículo e indexado en Chroma). Se
 abstiene explícitamente cuando no encuentra información relevante, en vez de

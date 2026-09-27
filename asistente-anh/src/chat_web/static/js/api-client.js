@@ -6,7 +6,7 @@
  * mensaje, detalles?}).
  */
 
-import { API_KEY_ASISTENTE, TIMEOUT_MS, URL_BACKEND_ANH, URL_CIUDADANIA_DIGITAL, URL_RAG } from "./config.js";
+import { API_KEY_ASISTENTE, TIMEOUT_MS, URL_BACKEND_ANH, URL_CIUDADANIA_DIGITAL, URL_RAG, URL_VALIDACION_IMAGENES } from "./config.js";
 
 export class ApiError extends Error {
   constructor(statusCode, mensaje, codigo = null) {
@@ -87,6 +87,14 @@ export async function consultarEstado(codigoTramite) {
 /** Texto de la burbuja de "Ver estado", redactado por LLM (RAG, sin auth). */
 export async function generarTextoEstado(datos) {
   const respuesta = await peticion("POST", `${URL_RAG}/v1/generar-texto-estado`, { body: datos });
+  if (!respuesta.ok) throw await errorDesdeRespuesta(respuesta);
+  return respuesta.json();
+}
+
+export async function validarImagen(contenidoBase64, mime, nombreArchivo = null) {
+  const respuesta = await peticion("POST", `${URL_VALIDACION_IMAGENES}/v1/validaciones-imagen`, {
+    body: { contenido_base64: contenidoBase64, mime, nombre_archivo: nombreArchivo },
+  });
   if (!respuesta.ok) throw await errorDesdeRespuesta(respuesta);
   return respuesta.json();
 }
