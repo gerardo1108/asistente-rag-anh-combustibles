@@ -20,6 +20,10 @@ Rama: `experimento/gemini-free-tier`
 4. Verificacion con el servicio desactivado: respuesta `503 VALIDACION_IMAGENES_DESACTIVADA`, sin llamada al proveedor.
 5. Pruebas locales con proveedor simulado: imagen valida, base64 invalido y MIME no soportado.
 
+## Verificacion posterior en AI Studio
+
+La consola del proyecto `asistente` mostro **5 solicitudes**, **100% de exito** y **0 errores**, manteniendo el proyecto en **Nivel gratuito**. Las dos solicitudes adicionales corresponden al caso valido y al caso invalido ejecutados en la prueba de extremo a extremo.
+
 ## Control de consumo
 
 - Las llamadas reales a Gemini fueron puntuales y manuales.
