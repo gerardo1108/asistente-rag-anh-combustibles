@@ -26,6 +26,15 @@ services:
     ports: ["127.0.0.1:${RAG_HOST_PORT:-8003}:8003"]
     env_file: [../../asistente-anh/.env]
     restart: unless-stopped
+  validacion-imagenes:
+    build:
+      context: ../../asistente-anh
+      dockerfile: src/validacion_imagenes/Dockerfile
+    ports: ["127.0.0.1:${VALIDACION_HOST_PORT:-18004}:8004"]
+    env_file: [../../asistente-anh/.env]
+    environment:
+      VALIDACION_IMAGENES_ACTIVA: "true"
+    restart: unless-stopped
   chat:
     build:
       context: ../../asistente-anh
@@ -35,6 +44,8 @@ services:
       BACKEND_URL: "http://backend-anh:8001"
       CIUDADANIA_URL: "http://ciudadania-digital:8002"
       RAG_URL: "http://rag:8003"
+      VALIDACION_IMAGENES_URL: "http://validacion-imagenes:8004"
+      VALIDACION_IMAGENES_ACTIVA: "true"
     restart: unless-stopped
 volumes:
   backend-datos:

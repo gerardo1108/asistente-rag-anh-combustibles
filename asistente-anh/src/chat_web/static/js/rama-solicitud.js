@@ -53,6 +53,8 @@ function estadoInicial() {
 
 let estado = estadoInicial();
 let contenedorMensajes = null;
+let filaPaso2 = null;
+let filaPaso3 = null;
 
 export function mostrar(contenedor) {
   contenedor.innerHTML = "";
@@ -66,6 +68,8 @@ export function mostrar(contenedor) {
 
 export function reset() {
   estado = estadoInicial();
+  filaPaso2 = null;
+  filaPaso3 = null;
 }
 
 /** Llamado por estado-app.js cada vez que esta pestaña vuelve a quedar activa. */
@@ -83,6 +87,22 @@ function congelar(nodo) {
   nodo.querySelectorAll("input, select, textarea, button").forEach((el) => {
     el.disabled = true;
   });
+}
+
+function descongelar(nodo) {
+  nodo.querySelectorAll("input, select, textarea, button").forEach((el) => {
+    el.disabled = false;
+  });
+}
+
+function volverDesde(filaActual, filaAnterior) {
+  const mensajeAnterior = filaActual.previousElementSibling;
+  filaActual.remove();
+  mensajeAnterior?.remove();
+  if (filaAnterior) {
+    descongelar(filaAnterior.querySelector(".panel-formulario"));
+    filaAnterior.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
 }
 
 // --- Paso 1: verificar identidad ---
@@ -197,7 +217,8 @@ async function agregarPaso2() {
     </div>
   `;
   const nodo = panel.firstElementChild;
-  contenedorMensajes.appendChild(crearBurbujaFormulario(nodo));
+  filaPaso2 = crearBurbujaFormulario(nodo);
+  contenedorMensajes.appendChild(filaPaso2);
   irAlFinal();
 
   const selDepartamento = nodo.querySelector("#sel-departamento");
@@ -356,12 +377,14 @@ function agregarPaso3() {
         <p class="nombre-archivo"></p>
         <p class="tamano-archivo"></p>
       </div>
+      <button type="button" id="boton-regresar-paso3" class="boton-secundario">Volver al paso anterior</button>
       <button id="boton-continuar-paso3" class="boton-primario boton-ancho-completo" disabled>Continuar</button>
       <div id="mensaje-paso3"></div>
     </div>
   `;
   const nodo = panel.firstElementChild;
-  contenedorMensajes.appendChild(crearBurbujaFormulario(nodo));
+  filaPaso3 = crearBurbujaFormulario(nodo);
+  contenedorMensajes.appendChild(filaPaso3);
   irAlFinal();
 
   const inputFoto = nodo.querySelector("#input-foto");
@@ -370,6 +393,11 @@ function agregarPaso3() {
   const confirmacion = nodo.querySelector("#confirmacion-foto");
   const iconoArchivo = nodo.querySelector(".icono-archivo");
   const boton = nodo.querySelector("#boton-continuar-paso3");
+
+  nodo.querySelector("#boton-regresar-paso3").addEventListener("click", () => {
+    volverDesde(filaPaso3, filaPaso2);
+    filaPaso3 = null;
+  });
 
   let urlPreviaFoto = null;
 
@@ -498,16 +526,21 @@ function agregarPaso4() {
         Declaro que la información proporcionada es verídica y asumo responsabilidad por su veracidad,
         conforme a la normativa vigente.
       </label>
+      <button type="button" id="boton-regresar-paso4" class="boton-secundario">Volver al paso anterior</button>
       <button id="boton-enviar" class="boton-primario boton-ancho-completo" disabled>Confirmar y enviar</button>
       <div id="mensaje-paso4"></div>
     </div>
   `;
   const nodo = panel.firstElementChild;
-  contenedorMensajes.appendChild(crearBurbujaFormulario(nodo));
+  const filaPaso4 = crearBurbujaFormulario(nodo);
+  contenedorMensajes.appendChild(filaPaso4);
   irAlFinal();
 
   const checkbox = nodo.querySelector("#input-jurada");
   const boton = nodo.querySelector("#boton-enviar");
+  nodo.querySelector("#boton-regresar-paso4").addEventListener("click", () => {
+    volverDesde(filaPaso4, filaPaso3);
+  });
   checkbox.addEventListener("change", () => {
     boton.disabled = !checkbox.checked;
   });
