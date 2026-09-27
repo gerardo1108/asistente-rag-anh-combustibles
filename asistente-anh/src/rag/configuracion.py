@@ -45,7 +45,9 @@ def modelo_groq() -> str:
 
 
 def proveedores_llm() -> list[str]:
-    valor = os.environ.get("LLM_PROVEEDORES", "groq,gemini")
+    # El piloto usa un único proveedor explícito para evitar activar Gemini
+    # accidentalmente cuando se despliega sin configurar GOOGLE_API_KEY.
+    valor = os.environ.get("LLM_PROVEEDORES", "groq")
     proveedores = [p.strip().lower() for p in valor.split(",") if p.strip()]
     if not proveedores:
         raise RuntimeError("LLM_PROVEEDORES no puede quedar vacío.")

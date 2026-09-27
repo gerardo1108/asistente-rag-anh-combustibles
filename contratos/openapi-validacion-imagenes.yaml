@@ -1,0 +1,166 @@
+openapi: 3.0.3
+info:
+  title: Servicio de Validación de Imágenes - Asistente ANH
+  description: >
+    Verifica que una fotografía muestre claramente un rostro humano y una
+    cédula de identidad sostenida por esa persona, sin sobreposiciones que
+    oculten alguno de los dos. Es un pre-filtro automático de presencia y
+    oclusión: no evalúa legibilidad fina, vigencia del documento, ni que el
+    rostro corresponda a la persona registrada en Ciudadanía Digital — eso
+    sigue siendo responsabilidad del evaluador humano. Es consumido por la
+    interfaz de chat antes de enviar la solicitud al Backend ANH.
+  version: 1.0.0
+
+servers:
+  - url: /v1
+
+paths:
+  /validaciones-imagen:
+    post:
+      operationId: validarImagen
+      summary: Valida que una fotografía muestre rostro y cédula de identidad
+      description: >
+        Recibe una imagen en base64 y devuelve un veredicto de si muestra,
+        con claridad y sin sobreposiciones, un rostro humano y una cédula de
+        identidad. Si la imagen no es interpretable (borrosa, oscura, o no
+        es una foto de una persona), responde igual con `200` y
+        `veredicto: INVALIDA` — no es un error del servicio, es un
+        resultado válido de la evaluación.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidarImagenRequest'
+      responses:
+        '200':
+          description: Imagen evaluada (válida o inválida).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidarImagenResponse'
+              examples:
+                valida:
+                  summary: Rostro y documento visibles, sin obstrucciones
+                  value:
+                    veredicto: VALIDA
+                    motivo_codigo: null
+                    motivo: "Se distinguen claramente el rostro y la cédula de identidad."
+                    proveedor_llm: gemini
+                    tiempo_respuesta_ms: 1180
+                documento_no_visible:
+                  summary: No se ve la cédula de identidad
+                  value:
+                    veredicto: INVALIDA
+                    motivo_codigo: DOCUMENTO_NO_VISIBLE
+                    motivo: "No se distingue ninguna cédula de identidad en la foto."
+                    proveedor_llm: gemini
+                    tiempo_respuesta_ms: 960
+                rostro_no_visible:
+                  summary: No se ve el rostro
+                  value:
+                    veredicto: INVALIDA
+                    motivo_codigo: ROSTRO_NO_VISIBLE
+                    motivo: "No se distingue tu rostro en la foto."
+                    proveedor_llm: gemini
+                    tiempo_respuesta_ms: 1020
+                superposicion:
+                  summary: Algo tapa el rostro o el documento
+                  value:
+                    veredicto: INVALIDA
+                    motivo_codigo: SUPERPOSICION_DETECTADA
+                    motivo: "Un dedo cubre parte de la cédula de identidad."
+                    proveedor_llm: gemini
+                    tiempo_respuesta_ms: 1105
+                no_interpretable:
+                  summary: La imagen no permite evaluar nada
+                  value:
+                    veredicto: INVALIDA
+                    motivo_codigo: IMAGEN_NO_INTERPRETABLE
+                    motivo: "La imagen está demasiado oscura o borrosa para evaluarla."
+                    proveedor_llm: gemini
+                    tiempo_respuesta_ms: 890
+        '400':
+          description: Imagen inválida, formato no soportado, o demasiado pesada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                imagen_invalida:
+                  value: {codigo: IMAGEN_INVALIDA, mensaje: "El contenido no corresponde a una imagen válida."}
+                mime_no_soportado:
+                  value: {codigo: MIME_NO_SOPORTADO, mensaje: "Formato no soportado. Usá JPG o PNG."}
+                demasiado_grande:
+                  value: {codigo: IMAGEN_DEMASIADO_GRANDE, mensaje: "La imagen supera el tamaño máximo permitido (8 MB)."}
+        '500':
+          description: Ningún proveedor de visión pudo procesar la imagen.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                codigo: SERVICIO_VISION_NO_DISPONIBLE
+                mensaje: "El servicio de validación no respondió correctamente."
+
+components:
+  schemas:
+    ValidarImagenRequest:
+      type: object
+      required:
+        - contenido_base64
+      properties:
+        contenido_base64:
+          type: string
+          format: byte
+          description: Contenido de la imagen, codificado en base64.
+        mime:
+          type: string
+          enum: [image/jpeg, image/png]
+          default: image/jpeg
+        nombre_archivo:
+          type: string
+          description: Opcional. Solo para trazabilidad/logs.
+          nullable: true
+          example: "titular.jpg"
+
+    ValidarImagenResponse:
+      type: object
+      required:
+        - veredicto
+      properties:
+        veredicto:
+          type: string
+          enum: [VALIDA, INVALIDA]
+        motivo_codigo:
+          type: string
+          enum: [ROSTRO_NO_VISIBLE, DOCUMENTO_NO_VISIBLE, SUPERPOSICION_DETECTADA, IMAGEN_NO_INTERPRETABLE]
+          nullable: true
+          description: Null si veredicto es VALIDA.
+        motivo:
+          type: string
+          nullable: true
+          description: Texto legible para mostrar al ciudadano. Null si veredicto es VALIDA.
+        proveedor_llm:
+          type: string
+          nullable: true
+          description: Proveedor de visión que emitió el veredicto (ej. "gemini").
+          example: gemini
+        tiempo_respuesta_ms:
+          type: integer
+          nullable: true
+          description: Tiempo de la llamada de evaluación que respondió, en milisegundos.
+          example: 1180
+
+    Error:
+      type: object
+      required:
+        - codigo
+        - mensaje
+      properties:
+        codigo:
+          type: string
+          example: IMAGEN_INVALIDA
+        mensaje:
+          type: string
+          example: "El contenido no corresponde a una imagen válida."

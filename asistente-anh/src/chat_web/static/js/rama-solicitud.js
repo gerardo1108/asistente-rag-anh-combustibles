@@ -188,6 +188,7 @@ async function agregarPaso2() {
       <select id="sel-producto"></select>
       <label for="input-volumen">Volumen (litros)</label>
       <input type="number" id="input-volumen" min="0" step="1" />
+      <div id="mensaje-volumen"></div>
       <label for="input-uso">Uso / destino del combustible</label>
       <textarea id="input-uso"></textarea>
       <button id="boton-continuar-paso2" class="boton-primario">Continuar</button>
@@ -201,6 +202,9 @@ async function agregarPaso2() {
   const selDepartamento = nodo.querySelector("#sel-departamento");
   const selProvincia = nodo.querySelector("#sel-provincia");
   const selMunicipio = nodo.querySelector("#sel-municipio");
+  const inputVolumen = nodo.querySelector("#input-volumen");
+  const mensajeVolumenDiv = nodo.querySelector("#mensaje-volumen");
+  let maximoLitros = null;
 
   llenarSelect(selDepartamento, Object.keys(ubicaciones), { placeholder: "Elegir..." });
   llenarSelect(nodo.querySelector("#sel-actividad"), actividades, { placeholder: "Elegir..." });
@@ -215,6 +219,30 @@ async function agregarPaso2() {
     }
     llenarSelect(selMunicipio, Object.keys(ubicaciones[departamento][provincia]), { placeholder: "Elegir..." });
   };
+  const actualizarLimiteVolumen = () => {
+    const municipio = ubicaciones[selDepartamento.value]?.[selProvincia.value]?.[selMunicipio.value];
+    if (!municipio) {
+      maximoLitros = null;
+      inputVolumen.removeAttribute("max");
+      mensajeVolumenDiv.innerHTML = "";
+      return;
+    }
+    maximoLitros = municipio.es_frontera ? 50 : 120;
+    inputVolumen.max = String(maximoLitros);
+    mensajeVolumenDiv.innerHTML = `<p class="texto-aviso">Límite aplicable: ${maximoLitros} litros.</p>`;
+    validarVolumen();
+  };
+  const validarVolumen = () => {
+    const valor = parseFloat(inputVolumen.value);
+    if (maximoLitros !== null && valor > maximoLitros) {
+      mensajeVolumenDiv.innerHTML = `<p class="texto-error">El volumen no puede superar los ${maximoLitros} litros.</p>`;
+      return false;
+    }
+    if (maximoLitros !== null) {
+      mensajeVolumenDiv.innerHTML = `<p class="texto-aviso">Límite aplicable: ${maximoLitros} litros.</p>`;
+    }
+    return true;
+  };
   const repoblarProvincias = () => {
     const departamento = selDepartamento.value;
     if (!departamento) {
@@ -228,6 +256,8 @@ async function agregarPaso2() {
 
   selDepartamento.addEventListener("change", repoblarProvincias);
   selProvincia.addEventListener("change", repoblarMunicipios);
+  selMunicipio.addEventListener("change", actualizarLimiteVolumen);
+  inputVolumen.addEventListener("input", validarVolumen);
   repoblarProvincias();
 
   nodo.querySelector("#boton-continuar-paso2").addEventListener("click", () => {
@@ -255,6 +285,7 @@ async function agregarPaso2() {
         `<p class="texto-aviso">Completá todos los desplegables, dirección y uso/destino, y el volumen debe ser mayor a cero.</p>`;
       return;
     }
+    if (!validarVolumen()) return;
 
     estado.campos = {
       departamento,
