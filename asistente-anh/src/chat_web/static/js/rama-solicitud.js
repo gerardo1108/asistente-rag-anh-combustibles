@@ -16,7 +16,8 @@
  * Streamlit; en el DOM no existe ese problema.
  */
 
-import { ApiError, registrarSolicitud, verificarCiudadania } from "./api-client.js";
+import { ApiError, registrarSolicitud, validarImagen, verificarCiudadania } from "./api-client.js";
+import { VALIDACION_IMAGENES_ACTIVA } from "./config.js";
 import { cargarActividades, cargarUbicaciones } from "./catalogos.js";
 import { generarUUID } from "./util.js";
 import { crearBurbuja, crearBurbujaFormulario } from "./componentes.js";
@@ -407,6 +408,22 @@ function agregarPaso3() {
     estado.fotoBase64 = dataUrl.split(",")[1];
     estado.fotoNombre = archivo.name;
     estado.fotoMime = archivo.type || "image/jpeg";
+    if (VALIDACION_IMAGENES_ACTIVA) {
+      boton.disabled = true;
+      try {
+        const resultado = await validarImagen(estado.fotoBase64, estado.fotoMime, estado.fotoNombre);
+        if (resultado.veredicto !== "VALIDA") {
+          nodo.querySelector("#mensaje-paso3").innerHTML = `<p class="texto-error">${resultado.motivo || "La imagen no cumple los requisitos."}</p>`;
+          boton.disabled = false;
+          return;
+        }
+      } catch (error) {
+        const mensaje = error instanceof ApiError ? error.mensaje : "No se pudo validar la imagen.";
+        nodo.querySelector("#mensaje-paso3").innerHTML = `<p class="texto-error">${mensaje}</p>`;
+        boton.disabled = false;
+        return;
+      }
+    }
     congelar(nodo);
     contenedorMensajes.appendChild(
       crearBurbuja("asistente", "Gracias, recibí tu foto. Antes de enviar tu solicitud, revisá que los datos estén correctos."),

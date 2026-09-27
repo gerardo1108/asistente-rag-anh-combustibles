@@ -23,6 +23,7 @@ SERVICIOS = {
     "backend": os.getenv("BACKEND_URL", "http://127.0.0.1:8001"),
     "ciudadania": os.getenv("CIUDADANIA_URL", "http://127.0.0.1:8002"),
     "rag": os.getenv("RAG_URL", "http://127.0.0.1:8003"),
+    "validacion-imagen": os.getenv("VALIDACION_IMAGENES_URL", "http://127.0.0.1:8004"),
 }
 
 
@@ -39,7 +40,9 @@ def configuracion_servicios():
     return Response(
         "export const URL_BACKEND_ANH = '/api/backend';\n"
         "export const URL_CIUDADANIA_DIGITAL = '/api/ciudadania';\n"
-        "export const URL_RAG = '/api/rag';\n",
+        "export const URL_RAG = '/api/rag';\n"
+        f"export const URL_VALIDACION_IMAGENES = '/api/validacion-imagen';\n"
+        f"export const VALIDACION_IMAGENES_ACTIVA = {str(os.getenv('VALIDACION_IMAGENES_ACTIVA', 'false').lower() in {'1', 'true', 'si', 'sí', 'yes'}).lower()};\n",
         media_type="application/javascript",
     )
 
