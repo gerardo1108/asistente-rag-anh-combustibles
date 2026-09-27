@@ -9,6 +9,7 @@ Fecha: 2026-09-27
 - Limite de 120 litros para municipios no fronterizos.
 - Mensaje visible del limite aplicable antes de continuar el registro.
 - Preguntas manuales para evaluar el RAG en `asistente-anh/src/rag/evaluacion/preguntas-rag.md`.
+- `DS-5400.md` con los limites normativos de 120 litros en territorio nacional y 50 litros en zonas fronterizas.
 
 Estas validaciones se ejecutan en el navegador y no llaman a Gemini ni a otro proveedor externo.
 
@@ -19,6 +20,8 @@ El proveedor predeterminado del RAG queda fijado en `groq`; Gemini solo se activ
 - Servicio de validacion de imagenes con Gemini.
 - Activacion de `GOOGLE_API_KEY` para validar fotografias.
 - Cambios experimentales del runtime del RAG y del corpus ampliado, hasta completar la evaluacion local.
+
+El uso agricola se registra como destino declarado en el formulario. No se agrega una excepcion agricola ni un limite especial sin una fuente normativa explicita.
 
 El piloto conserva el flujo de fotografias existente sin validacion automatica externa. Para mantener el costo controlado, cualquier prueba de vision debe ejecutarse en una ventana acotada, con una clave separada y limites de cuota revisados.
 
