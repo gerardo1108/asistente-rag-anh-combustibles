@@ -45,9 +45,9 @@ async function errorDesdeRespuesta(respuesta) {
   return new ApiError(respuesta.status, mensaje, cuerpo?.codigo ?? null);
 }
 
-export async function consultarRag(pregunta) {
+export async function consultarRag(pregunta, contextoConversacion) {
   const respuesta = await peticion("POST", `${URL_RAG}/v1/consultas-rag`, {
-    body: { pregunta },
+    body: { pregunta, contexto_conversacion: contextoConversacion },
   });
   if (!respuesta.ok) throw await errorDesdeRespuesta(respuesta);
   return respuesta.json();

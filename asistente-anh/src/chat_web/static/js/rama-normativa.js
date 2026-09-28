@@ -10,7 +10,7 @@ const SVG_ENVIAR =
   '<polyline points="6 11 12 5 18 11"></polyline></svg>';
 
 const MENSAJE_BIENVENIDA =
-  "Hola, soy el Asistente ANH. Puedes preguntarme sobre la normativa, los requisitos y el procedimiento para registrar tu solicitud de consumo de combustibles fuera de tanque.";
+  "¡Hola! Soy el Asistente ANH. Puedo ayudarte con preguntas sobre la normativa y el procedimiento para registrar tu consumo de combustibles líquidos fuera de tanque. ¿En qué te puedo ayudar?";
 
 /**
  * El aviso "orientativa" ya lo arma el LLM dentro de `resultado.respuesta`
@@ -43,13 +43,16 @@ export function mostrar(contenedor) {
   contenedor.querySelector("#form-pregunta").addEventListener("submit", onEnviar);
 }
 
-/** No hay estado propio a nivel de módulo: al reiniciar, `mostrar()` reconstruye `.mensajes` vacío. */
-export function reset() {}
+let preguntaAnterior = null;
 
 /** Llamado por estado-app.js cada vez que esta pestaña vuelve a quedar activa. */
 export function alMostrar() {
   const mensajes = document.getElementById("mensajes");
   if (mensajes) irAlFinal(mensajes);
+}
+
+export function reset() {
+  preguntaAnterior = null;
 }
 
 function irAlFinal(mensajes) {
@@ -70,8 +73,11 @@ async function onEnviar(evento) {
   mensajes.appendChild(crearBurbuja("usuario", pregunta));
   irAlFinal(mensajes);
 
+  const contexto = preguntaAnterior ? `El usuario preguntó antes: "${preguntaAnterior}"` : undefined;
+  preguntaAnterior = pregunta;
+
   try {
-    const resultado = await consultarRag(pregunta);
+    const resultado = await consultarRag(pregunta, contexto);
     mensajes.appendChild(crearBurbuja("asistente", construirHtmlRespuesta(resultado), { modo: "html" }));
     if (resultado.proveedor_llm && resultado.tiempo_respuesta_ms != null) {
       mensajes.appendChild(crearCaption(`Respondido por ${resultado.proveedor_llm} en ${resultado.tiempo_respuesta_ms} ms`));
