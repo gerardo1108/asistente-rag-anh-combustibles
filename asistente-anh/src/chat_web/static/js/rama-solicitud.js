@@ -55,6 +55,7 @@ let estado = estadoInicial();
 let contenedorMensajes = null;
 let filaPaso2 = null;
 let filaPaso3 = null;
+let filaPaso1 = null;
 
 export function mostrar(contenedor) {
   contenedor.innerHTML = "";
@@ -70,6 +71,7 @@ export function reset() {
   estado = estadoInicial();
   filaPaso2 = null;
   filaPaso3 = null;
+  filaPaso1 = null;
 }
 
 /** Llamado por estado-app.js cada vez que esta pestaña vuelve a quedar activa. */
@@ -122,7 +124,8 @@ function agregarPaso1() {
     </div>
   `;
   const nodo = panel.firstElementChild;
-  contenedorMensajes.appendChild(crearBurbujaFormulario(nodo));
+  filaPaso1 = crearBurbujaFormulario(nodo);
+  contenedorMensajes.appendChild(filaPaso1);
   irAlFinal();
 
   nodo.querySelector("#boton-verificar").addEventListener("click", () => onVerificarIdentidad(nodo));
@@ -212,6 +215,7 @@ async function agregarPaso2() {
       <div id="mensaje-volumen"></div>
       <label for="input-uso">Uso / destino del combustible</label>
       <textarea id="input-uso"></textarea>
+      <button type="button" id="boton-regresar-paso2" class="boton-secundario">Volver al paso anterior</button>
       <button id="boton-continuar-paso2" class="boton-primario">Continuar</button>
       <div id="mensaje-paso2"></div>
     </div>
@@ -220,6 +224,11 @@ async function agregarPaso2() {
   filaPaso2 = crearBurbujaFormulario(nodo);
   contenedorMensajes.appendChild(filaPaso2);
   irAlFinal();
+
+  nodo.querySelector("#boton-regresar-paso2").addEventListener("click", () => {
+    volverDesde(filaPaso2, filaPaso1);
+    filaPaso2 = null;
+  });
 
   const selDepartamento = nodo.querySelector("#sel-departamento");
   const selProvincia = nodo.querySelector("#sel-provincia");
