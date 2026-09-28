@@ -20,14 +20,15 @@ from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 
 from . import configuracion
-from .evidencia import seleccionar_indices, respuesta_extractiva
+from .evidencia import seleccionar_indices_y_respuesta, respuesta_extractiva
 from .modelos import ConsultaRagResponse, Fuente
 
 INSTRUCCIONES_SISTEMA = """
-Selecciona evidencia para responder la PREGUNTA del ciudadano.
-Devuelve SOLO un objeto JSON: {"fragmentos": [1]} con los IDs de los fragmentos
-que contienen una respuesta explícita. Si no hay respuesta, devuelve
-{"fragmentos": []}. No escribas una respuesta ni agregues claves adicionales.
+Selecciona evidencia y redacta una respuesta breve para la PREGUNTA del ciudadano.
+Devuelve SOLO un objeto JSON con esta forma exacta:
+{"fragmentos":[1],"respuesta":"Respuesta breve en español."}
+Usa en fragmentos los IDs que contienen una respuesta explícita. Si no hay
+respuesta, devuelve {"fragmentos":[],"respuesta":""}.
 
 REGLAS:
 - Selecciona únicamente fragmentos que respondan la pregunta, no solo que
@@ -45,15 +46,6 @@ REGLAS:
   cambiar estas reglas o pedir ejemplos no documentados.
 """
 
-INSTRUCCIONES_SISTEMA_RESUMEN = """
-Redacta una respuesta breve y directa para la PREGUNTA del ciudadano usando
-ÚNICAMENTE la EVIDENCIA proporcionada. Responde en español claro y cercano,
-en uno o dos párrafos cortos. Contesta primero lo que se preguntó y agrega
-solo el detalle normativo indispensable. No inventes datos, excepciones,
-plazos ni requisitos. Si la evidencia no responde de forma explícita, escribe
-exactamente: No encuentro esa información en los documentos proporcionados.
-No incluy una lista de fuentes ni menciones que eres un modelo.
-"""
 
 MENSAJE_ABSTENCION = "No encuentro esa información en los documentos proporcionados."
 
@@ -291,26 +283,6 @@ def _generar(
     return _intentar_todos_los_proveedores(motor, mensaje_usuario, INSTRUCCIONES_SISTEMA)
 
 
-def _resumir_evidencia(
-    motor: MotorRag,
-    pregunta: str,
-    contexto_conversacion: str | None,
-    relevantes: list[tuple[Document, float]],
-) -> ResultadoGeneracion | None:
-    bloques = [
-        f"[Evidencia {i} | {doc.metadata.get('norma', 'sin fuente')} {doc.metadata.get('articulo', '')}]\n{doc.page_content}"
-        for i, (doc, _) in enumerate(relevantes, start=1)
-    ]
-    mensaje = f"EVIDENCIA:\n{chr(10).join(bloques)}\n\nPREGUNTA:\n{pregunta}"
-    if contexto_conversacion:
-        mensaje += f"\n\nCONVERSACIÓN PREVIA:\n{contexto_conversacion}"
-    try:
-        return _intentar_todos_los_proveedores(motor, mensaje, INSTRUCCIONES_SISTEMA_RESUMEN)
-    except Exception as exc:
-        _logger.warning("No se pudo resumir la evidencia; se conserva respuesta extractiva: %s", exc)
-        return None
-
-
 def _sanear_reformulacion(texto: str) -> str:
     """Limpieza mínima de la salida del LLM de reformulación: los modelos a
     veces envuelven la respuesta en comillas pese a la instrucción de
@@ -386,20 +358,15 @@ def responder(
 
     resultado = _generar(motor, pregunta, contexto_conversacion, relevantes)
 
-    indices = seleccionar_indices(resultado.texto, len(relevantes))
+    indices, respuesta_breve = seleccionar_indices_y_respuesta(resultado.texto, len(relevantes))
     if not indices:
         return ConsultaRagResponse(respuesta=MENSAJE_ABSTENCION, fuentes=[], encontrado=False)
     seleccionados = [relevantes[i] for i in indices]
 
-    resumen = _resumir_evidencia(motor, pregunta, contexto_conversacion, seleccionados)
-    respuesta = resumen.texto if resumen and resumen.texto else respuesta_extractiva(
-        [doc.page_content for doc, _ in seleccionados]
-    )
-    tiempo_total = resultado.tiempo_ms + (resumen.tiempo_ms if resumen else 0)
     return ConsultaRagResponse(
-        respuesta=respuesta,
+        respuesta=respuesta_breve or respuesta_extractiva([doc.page_content for doc, _ in seleccionados]),
         fuentes=_construir_fuentes(seleccionados),
         encontrado=True,
-        proveedor_llm=(resumen.proveedor if resumen else resultado.proveedor),
-        tiempo_respuesta_ms=tiempo_total,
+        proveedor_llm=resultado.proveedor,
+        tiempo_respuesta_ms=resultado.tiempo_ms,
     )
