@@ -59,6 +59,16 @@ function irAlFinal(mensajes) {
   mensajes.scrollTop = mensajes.scrollHeight;
 }
 
+function esSaludo(pregunta) {
+  const normalizada = pregunta
+    .toLocaleLowerCase("es-BO")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[!?¿¡.,]/g, "")
+    .trim();
+  return /^(hola|buenas|buen dia|buenos dias|buenas tardes|buenas noches)$/.test(normalizada);
+}
+
 async function onEnviar(evento) {
   evento.preventDefault();
   const input = document.getElementById("input-pregunta");
@@ -72,6 +82,12 @@ async function onEnviar(evento) {
   // intercambios — el área de mensajes scrollea internamente, ver estilos.css.
   mensajes.appendChild(crearBurbuja("usuario", pregunta));
   irAlFinal(mensajes);
+
+  if (esSaludo(pregunta)) {
+    mensajes.appendChild(crearBurbuja("asistente", MENSAJE_BIENVENIDA));
+    irAlFinal(mensajes);
+    return;
+  }
 
   const contexto = preguntaAnterior ? `El usuario preguntó antes: "${preguntaAnterior}"` : undefined;
   preguntaAnterior = pregunta;
