@@ -285,13 +285,14 @@ class Almacen:
                 "TRAMITE_NO_ENCONTRADO",
                 "No se encontró un trámite con el código indicado.",
             )
-        if fila["estado"] != "REGISTRADO":
+        if fila["estado"] != "REGISTRADO" and estado != "REGISTRADO":
             raise ErrorAplicacion(
                 409,
                 "TRAMITE_YA_RESUELTO",
-                "La solicitud ya fue resuelta y no admite un nuevo cambio de estado.",
+                "La solicitud ya fue resuelta. Reabrila como REGISTRADO antes de cambiar la decisión.",
             )
-        fecha_resolucion = ahora_iso()
+        fecha_resolucion = None if estado == "REGISTRADO" else ahora_iso()
+        motivo_rechazo = None if estado == "REGISTRADO" else motivo_rechazo
         with self._lock, self._conexion:
             self._conexion.execute(
                 """

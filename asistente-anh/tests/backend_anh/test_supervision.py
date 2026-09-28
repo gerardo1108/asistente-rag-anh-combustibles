@@ -88,6 +88,26 @@ def test_resolver_ya_resuelto_es_409(cliente):
     assert respuesta.json()["codigo"] == "TRAMITE_YA_RESUELTO"
 
 
+def test_reabrir_tramite_resuelto_y_resolverlo_nuevamente(cliente):
+    respuesta = cliente.patch(
+        "/v1/solicitudes/ANH-2026-000002/estado",
+        json={"estado": "REGISTRADO"},
+        headers=HEADERS,
+    )
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.json()
+    assert cuerpo["estado"] == "REGISTRADO"
+    assert cuerpo["fecha_resolucion"] is None
+
+    respuesta = cliente.patch(
+        "/v1/solicitudes/ANH-2026-000002/estado",
+        json={"estado": "RECHAZADO", "motivo_rechazo": "Corrección de prueba"},
+        headers=HEADERS,
+    )
+    assert respuesta.status_code == 200
+    assert respuesta.json()["estado"] == "RECHAZADO"
+
+
 def test_resolver_inexistente_es_404(cliente):
     respuesta = cliente.patch(
         "/v1/solicitudes/ANH-2026-NOEXISTE/estado",

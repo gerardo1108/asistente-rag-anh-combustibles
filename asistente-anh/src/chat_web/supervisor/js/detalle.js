@@ -109,7 +109,24 @@ function render(contenedor, codigo, solicitud) {
 
   if (solicitud.estado === "REGISTRADO") {
     renderAcciones(codigo);
+  } else {
+    renderReapertura(codigo);
   }
+}
+
+function renderReapertura(codigo) {
+  const panel = document.getElementById("panel-acciones");
+  panel.innerHTML = `
+    <div class="panel-acciones">
+      <p>La decisión actual puede reabrirse para corregirla.</p>
+      <button type="button" class="boton-secundario" id="boton-reabrir">Reabrir para corregir</button>
+      <div id="mensaje-accion"></div>
+    </div>
+  `;
+  document.getElementById("boton-reabrir").addEventListener("click", async () => {
+    if (!window.confirm("El trámite volverá a REGISTRADO y podrá resolverse nuevamente. ¿Continuar?")) return;
+    await ejecutarResolucion(codigo, "REGISTRADO");
+  });
 }
 
 function renderAcciones(codigo) {
