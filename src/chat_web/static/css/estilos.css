@@ -374,10 +374,9 @@ body {
    adentro y mitad afuera (no en una esquina) — mismo criterio visual del
    mockup: un botón "insignia" que sobresale del borde. */
 .boton-volver-paso {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
+  position: static;
+  transform: none;
+  margin: 12px auto 0;
   width: auto;
   min-width: 92px;
   padding: 10px 18px;
