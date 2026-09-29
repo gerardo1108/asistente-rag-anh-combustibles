@@ -11,6 +11,24 @@ RAG, el servicio de validación de imágenes y la interfaz de chat, en cambio,
 son los componentes reales que resuelven el trámite — no simulan nada
 externo.
 
+## Estado actual del proyecto
+
+Esta rama `main` contiene la base funcional del piloto, tomada de la versión
+de Helmut en el commit [`f5e6882`](https://github.com/hpardo-dev/asistente-anh/commit/f5e6882764d0b2302682274047a6f0f3c7dbfd43)
+y publicada en este proyecto mediante el commit
+[`bab8d60`](https://github.com/gerardo1108/asistente-rag-anh-combustibles/commit/bab8d60d2d3f89d3bc037eedf34deb06203e29ac).
+
+La versión está validada como **prototipo funcional para el piloto**. Se
+verificaron 33 pruebas automatizadas y los flujos de identidad, registro,
+aprobación, rechazo, seguimiento, RAG, validación de imágenes y supervisión.
+La validación de imágenes usa Gemini y el RAG puede usar Gemini o Groq según
+la configuración del archivo `.env`.
+
+El alcance sigue siendo académico y de demostración: los sistemas ANH y
+AGETIC son mocks, las credenciales son de prueba y no se deben usar datos
+personales reales. Antes de una evaluación final conviene repetir las pruebas
+con las claves y el entorno que utilizará el equipo.
+
 ---
 
 ## Arquitectura general
