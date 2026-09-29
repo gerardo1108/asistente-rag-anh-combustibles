@@ -376,16 +376,16 @@ body {
 .boton-volver-paso {
   position: absolute;
   top: 50%;
-  right: -14px;
+  right: 12px;
   transform: translateY(-50%);
   width: auto;
-  min-width: 28px;
-  padding: 0 9px;
-  height: 28px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 1.5px solid var(--anh-borde);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  min-width: 92px;
+  padding: 10px 18px;
+  height: auto;
+  border-radius: 10px;
+  background: var(--anh-verde);
+  border: none;
+  box-shadow: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -395,11 +395,10 @@ body {
   margin-left: 4px;
   font-size: 11px;
   font-weight: 700;
-  color: #3f3f3a;
+  color: #ffffff;
 }
 .boton-volver-paso:hover {
-  background: var(--anh-fondo);
-  border-color: var(--anh-borde-bot);
+  background: #174326;
 }
 
 /* --- Input de chat --- */
@@ -712,8 +711,8 @@ body {
     height: 14px;
   }
   .boton-volver-paso {
-    min-width: 26px;
-    padding: 0 7px;
+    min-width: 82px;
+    padding: 8px 14px;
     height: 26px;
     right: -13px;
   }
@@ -722,7 +721,7 @@ body {
     height: 12px;
   }
   .boton-volver-paso span {
-    font-size: 10px;
+    font-size: 12px;
   }
   .header-textos h1 {
     font-size: 18px;
