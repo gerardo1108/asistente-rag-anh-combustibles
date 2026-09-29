@@ -105,7 +105,7 @@ export function crearBurbujaPaso(numero, etiqueta, descripcion, { modo = "markdo
     boton.className = "boton-volver-paso";
     boton.title = "Volver al paso anterior";
     boton.setAttribute("aria-label", "Volver al paso anterior");
-    boton.innerHTML = SVG_CHEVRON_VOLVER;
+    boton.innerHTML = `${SVG_CHEVRON_VOLVER}<span>Volver</span>`;
     boton.addEventListener("click", onVolver);
     burbuja.appendChild(boton);
   }
