@@ -8,7 +8,7 @@ const SVG_PERSONA =
   '<circle cx="12" cy="8" r="4"></circle><path d="M4 20a8 8 0 0 1 16 0z"></path></svg>';
 const SVG_CHEVRON_VOLVER =
   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3F3F3A" stroke-width="2.5" ' +
-  'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"></polyline></svg>';
+  'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>';
 
 /**
  * Construye una fila de mensaje de chat (burbuja + hora + avatar, uno de
@@ -104,6 +104,7 @@ export function crearBurbujaPaso(numero, etiqueta, descripcion, { modo = "markdo
     boton.type = "button";
     boton.className = "boton-volver-paso";
     boton.title = "Volver al paso anterior";
+    boton.setAttribute("aria-label", "Volver al paso anterior");
     boton.innerHTML = SVG_CHEVRON_VOLVER;
     boton.addEventListener("click", onVolver);
     burbuja.appendChild(boton);
