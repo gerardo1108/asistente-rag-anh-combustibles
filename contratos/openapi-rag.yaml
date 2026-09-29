@@ -1,0 +1,244 @@
+openapi: 3.0.3
+info:
+  title: Servicio de Consultas RAG - Asistente ANH
+  description: >
+    Servicio de recuperación aumentada (RAG) sobre el corpus normativo del
+    trámite de registro de consumidores de combustibles líquidos en bidones.
+    Es consumido por el orquestador del asistente conversacional.
+  version: 1.0.0
+
+servers:
+  - url: /v1
+
+paths:
+  /consultas-rag:
+    post:
+      operationId: consultasRag
+      summary: Consulta al motor de recuperación aumentada
+      description: >
+        Recibe una pregunta en lenguaje natural y devuelve una respuesta
+        fundamentada en el corpus normativo, junto con las fuentes citadas.
+        Si no encuentra información relevante, se abstiene explícitamente
+        en lugar de inventar contenido.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsultaRagRequest'
+      responses:
+        '200':
+          description: Consulta procesada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaRagResponse'
+        '400':
+          description: Solicitud inválida (pregunta vacía o mal formada)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error interno del servicio RAG
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /generar-texto-estado:
+    post:
+      operationId: generarTextoEstado
+      summary: Redacta el texto de respuesta para "Ver estado", vía LLM
+      description: >
+        Recibe los datos ya estructurados de un trámite (obtenidos del
+        contrato estándar de integración) y devuelve un párrafo redactado
+        por un LLM para mostrar al ciudadano. Si todos los proveedores de
+        LLM fallan, responde igual con `200` y un texto de respaldo armado
+        con los mismos datos: este endpoint no propaga fallas de generación
+        como error, para que el flujo de "Ver estado" nunca se interrumpa.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerarTextoEstadoRequest'
+      responses:
+        '200':
+          description: Texto generado (por LLM, o de respaldo si el LLM falló).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerarTextoEstadoResponse'
+        '400':
+          description: Solicitud inválida o mal formada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    ConsultaRagRequest:
+      type: object
+      required:
+        - pregunta
+      properties:
+        pregunta:
+          type: string
+          description: Pregunta del usuario, en lenguaje natural.
+          example: "¿Quién debe registrarse para consumir combustibles en bidones?"
+        contexto_conversacion:
+          type: string
+          description: >
+            Opcional. Turno(s) previos de la conversación, usados para
+            resolver referencias implícitas (ej. "¿y sin ese formulario?").
+            El servicio es stateless; el orquestador decide qué enviar aquí.
+          nullable: true
+          example: "Usuario preguntó antes por el registro en bidones."
+
+    ConsultaRagResponse:
+      type: object
+      required:
+        - respuesta
+        - fuentes
+        - encontrado
+      properties:
+        respuesta:
+          type: string
+          description: Respuesta en lenguaje natural, redactada a partir del contexto recuperado.
+          example: "Debe registrarse toda persona que requiera adquirir combustibles líquidos fuera de tanque."
+        fuentes:
+          type: array
+          description: >
+            Fuentes normativas usadas para construir la respuesta. Excluye
+            contenido de referencia interna (glosario de siglas, catálogo de
+            actividades del formulario): son compilados propios del
+            asistente, no documentos oficiales, y no se listan como fuente
+            aunque hayan sido lo único consultado. También excluye chunks
+            que superaron el umbral de retrieval pero no uno más estricto
+            pensado solo para esta lista (evita listar chunks temáticamente
+            cercanos pero no directamente relacionados con la pregunta) —
+            ese filtro no afecta qué contexto usó el modelo para generar la
+            respuesta, solo qué se muestra. Vacío si encontrado es false, si
+            la pregunta fue un saludo o una pregunta sobre la identidad del
+            asistente (respondida sin consultar el corpus), o si ningún
+            chunk consultado superó ese umbral más estricto.
+          items:
+            $ref: '#/components/schemas/Fuente'
+        encontrado:
+          type: boolean
+          description: >
+            Indica si el servicio pudo responder: con información del
+            corpus, o con una respuesta fija ante un saludo o una pregunta
+            sobre la identidad del asistente (ninguna de las dos consulta el
+            corpus). Si es false, la respuesta es el mensaje de abstención
+            estándar.
+        proveedor_llm:
+          type: string
+          description: >
+            Proveedor de LLM que generó la respuesta (ej. "groq", "gemini").
+            Ausente/null si encontrado es false (abstención, sea porque el
+            retrieval no encontró chunks relevantes sin llamar a ningún LLM,
+            o porque el LLM concluyó que el contexto recuperado no
+            respondía la pregunta), o si la respuesta fue un saludo/pregunta
+            de identidad resuelta por patrón, sin llamar a ningún LLM.
+          nullable: true
+          example: "groq"
+        tiempo_respuesta_ms:
+          type: integer
+          description: >
+            Tiempo de la llamada de generación que respondió, en
+            milisegundos. No incluye reintentos fallidos de otros
+            proveedores. Ausente/null si encontrado es false o si la
+            respuesta fue un saludo/pregunta de identidad (no hubo llamada
+            de generación).
+          nullable: true
+          example: 842
+        nota:
+          type: string
+          description: >
+            Descargo estándar ("Esta respuesta es orientativa y no sustituye
+            la interpretación oficial de la ANH"), en un campo aparte en vez
+            de dentro de `respuesta`: es un texto fijo, no redactado por el
+            LLM, para que el formato sea siempre el mismo. Ausente/null si
+            encontrado es false (abstención), o si la respuesta fue un
+            saludo/pregunta de identidad resuelta por patrón (ninguna de las
+            dos amerita el descargo).
+          nullable: true
+          example: "Esta respuesta es orientativa y no sustituye la interpretación oficial de la ANH."
+        advertencia:
+          type: string
+          description: >
+            Advertencia técnica excepcional: solo presente cuando encontrado
+            es false y la causa no fue la ausencia genuina de información
+            relevante, sino que los proveedores de LLM fallaron al intentar
+            reformular la pregunta (fallback de retrieval) — una falla
+            transitoria de infraestructura, no una limitación del corpus.
+            El texto de `respuesta` en ese caso sigue siendo el mensaje de
+            abstención estándar; este campo aclara la causa real y sugiere
+            reintentar. Ausente/null en el resto de los casos.
+          nullable: true
+          example: "Los proveedores LLM no respondieron. Intenta de nuevo en un momento."
+
+    Fuente:
+      type: object
+      required:
+        - norma
+        - articulo
+      properties:
+        norma:
+          type: string
+          example: "RAN-ANH-DJ-UGJN N° 0008/2025"
+        articulo:
+          type: string
+          example: "Art. 1"
+        fragmento:
+          type: string
+          description: Opcional. Extracto del chunk usado para trazabilidad.
+          nullable: true
+
+    GenerarTextoEstadoRequest:
+      type: object
+      required:
+        - codigo
+        - estado
+        - fecha_registro
+      properties:
+        codigo:
+          type: string
+          description: Código de trámite.
+          example: "ANH-2026-000001"
+        estado:
+          type: string
+          enum: [REGISTRADO, APROBADO, RECHAZADO]
+        fecha_registro:
+          type: string
+          format: date-time
+        motivo_rechazo:
+          type: string
+          description: >
+            Solo cuando estado es RECHAZADO. No se envían campos que el
+            contrato estándar no devuelve (ej. el nombre del solicitante).
+          nullable: true
+
+    GenerarTextoEstadoResponse:
+      type: object
+      required:
+        - texto
+      properties:
+        texto:
+          type: string
+          description: >
+            Un solo párrafo en HTML mínimo (solo `<strong>` alrededor del
+            código y el estado), listo para mostrar en la burbuja del bot.
+          example: "El trámite <strong>ANH-2026-000001</strong> está <strong>REGISTRADO</strong> y se encuentra en revisión. Te notificaremos el resultado."
+
+    Error:
+      type: object
+      required:
+        - mensaje
+      properties:
+        mensaje:
+          type: string
+          example: "La pregunta no puede estar vacía."

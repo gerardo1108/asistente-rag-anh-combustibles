@@ -1,0 +1,725 @@
+:root {
+  --anh-verde: #1e5631;
+  --anh-verde-claro: #eaf3ec;
+  --anh-naranja: #f2a93b;
+  /* Mismo tono que .avatar-asistente: más saturado que --anh-naranja
+     (reservado para .texto-aviso), para que el encabezado de paso no se
+     confunda visualmente con un aviso/advertencia. */
+  --anh-naranja-fuerte: #e06d1a;
+  --anh-fondo: #f6f5f1;
+  --anh-texto: #1a1a18;
+  --anh-texto-secundario: #6b6862;
+  --anh-borde: #e7e4dd;
+  /* Mismos colores de los avatares (naranja del bot, verde del usuario),
+     aclarados 50% hacia blanco: el color íntegro se reserva para el ícono
+     circular, y este tono más suave es el que llevan los bordes de 2px de
+     las burbujas, para distinguir bot/usuario sin quedar tan saturado. */
+  --anh-borde-bot: #f0b68d;
+  --anh-borde-usuario: #8fab98;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  color: var(--anh-texto);
+  background: linear-gradient(180deg, #ffffff 0%, var(--anh-verde-claro) 100%);
+  min-height: 100vh;
+}
+
+.pagina {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.tarjeta {
+  width: 100%;
+  max-width: 720px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--anh-fondo);
+  border: 1px solid var(--anh-borde);
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(26, 26, 24, 0.08);
+  overflow: hidden;
+}
+
+/* Header + nav comparten un único degradado (crema -> verde salvia, el
+   mismo del mockup y del panel de supervisión), aplicado acá y no por
+   separado en cada uno: aplicarlo a header y nav por separado los dejaba
+   discontinuos entre sí. */
+.zona-superior {
+  background: linear-gradient(120deg, #e9e6d7 0%, #e0e4d5 55%, #d5dcd0 100%);
+  flex-shrink: 0;
+}
+
+/* --- Header --- */
+/* El alto queda fijado explícitamente (82px desktop, 80px mobile: el mismo
+   total de siempre) en vez de depender del contenido, para que crecer el
+   logo no lo estire. El logo es rectangular (256x123, no cuadrado), así que
+   ya no se lo fuerza a una caja cuadrada con letterboxing: se declara solo
+   el ancho y el alto sigue en proporción (`height: auto`), lo que además
+   deja más aire vertical del que ocupaba antes con la misma altura de caja. */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* Mismo total vertical (16px) que antes -no cambia el alto del header-,
+     pero corrido hacia arriba: menos padding-bottom para acercar el header
+     al grupo de botones, como en el mockup. */
+  padding: 14px 20px 2px;
+  height: 82px;
+  flex-shrink: 0;
+}
+.header .logo {
+  width: 99px;
+  height: auto;
+  flex-shrink: 0;
+}
+.header-textos h1 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+.header-textos p {
+  font-size: 13px;
+  color: var(--anh-texto-secundario);
+  margin: 2px 0 0 0;
+}
+
+/* --- Nav: la barra completa sigue el degradado de .zona-superior; el
+   grupo de 3 botones vive en su propia píldora blanca, centrada. El botón
+   de reinicio es un segundo hijo del flex, junto a la píldora (a su
+   derecha) y centrado verticalmente con ella vía `align-items` — el par
+   completo (píldora + botón) es lo que `justify-content: center` centra. */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 2px 20px 10px;
+  border-bottom: 1px solid var(--anh-borde);
+  flex-shrink: 0;
+}
+.nav-grupo {
+  display: flex;
+  gap: 4px;
+  background-color: #ffffff;
+  border: 1px solid var(--anh-borde);
+  border-radius: 12px;
+  padding: 4px;
+}
+.nav-item {
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--anh-texto-secundario);
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+}
+.nav-item:hover {
+  background-color: rgba(30, 86, 49, 0.08);
+}
+.nav-item.activo {
+  background-color: var(--anh-verde);
+  color: #ffffff;
+}
+
+/* --- Contenido: las 3 ramas viven acá siempre montadas, se alterna cuál
+   se ve con .oculto (nunca se destruye/reconstruye al cambiar de pestaña,
+   así cada una conserva su estado). --- */
+.contenido {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panel-rama {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panel-rama.oculto {
+  display: none;
+}
+.panel-rama-contenido {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Botón de reinicio: uno solo (no por pestaña), junto a la píldora de
+   navegación; reinicia la rama que esté activa en ese momento. Sin
+   posicionamiento propio: es un hijo más del flex de `.nav`, ver arriba. */
+.boton-reiniciar-nav {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* --- Mensajes de chat --- */
+.mensajes {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* Mensaje introductorio único (p. ej. antes del formulario de "Registrar
+   formulario"): mismo look de burbuja que .mensajes, pero sin flex:1 —no
+   debe estirarse para llenar el alto disponible, es una sola línea fija. */
+.mensaje-intro {
+  flex-shrink: 0;
+  padding: 16px 20px 0 20px;
+}
+.mensaje {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 80%;
+}
+.mensaje-columna {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.mensaje .burbuja {
+  border-radius: 16px;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-line;
+  overflow-wrap: break-word;
+}
+/* Bloque de aviso + fuentes al final de la respuesta de "Consultar". */
+.burbuja .separador {
+  border: none;
+  border-top: 1px solid #edebe4;
+  margin: 10px 0;
+}
+.burbuja .nota {
+  font-size: 12px;
+  color: var(--anh-texto-secundario);
+  margin-bottom: 6px;
+}
+.burbuja .fuentes {
+  font-size: 12px;
+  color: var(--anh-texto-secundario);
+}
+.burbuja .fuentes ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+}
+.burbuja .fuentes li {
+  margin-bottom: 2px;
+}
+.mensaje .hora {
+  font-size: 11px;
+  color: var(--anh-texto-secundario);
+  margin-top: 4px;
+}
+.mensaje-usuario {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.mensaje-usuario .burbuja {
+  background-color: #ffffff;
+  color: var(--anh-texto);
+  border: 2px solid var(--anh-borde-usuario);
+}
+.mensaje-usuario .mensaje-columna {
+  align-items: flex-end;
+}
+.mensaje-asistente {
+  align-self: flex-start;
+}
+.mensaje-asistente .burbuja {
+  background-color: #ffffff;
+  border: 2px solid var(--anh-borde-bot);
+  color: var(--anh-texto);
+  border-radius: 14px 14px 14px 4px;
+}
+
+/* Panel de formulario (paso 1 de "Registrar formulario", código de "Ver
+   estado") presentado como un turno de chat del usuario: burbuja blanca con
+   borde, alineada a la derecha como cualquier .mensaje-usuario, pero con
+   ancho fijo (no max-width) para que el formulario adentro pueda estirar
+   sus campos a todo su ancho. */
+.mensaje-formulario {
+  width: 80%;
+}
+/* `.mensaje-columna` normalmente se encoge a su contenido (correcto para
+   texto: una burbuja corta como "hola" no debe estirarse). Acá se fuerza a
+   crecer, porque el ancho fijo de `.mensaje-formulario` es sobre la fila
+   completa (avatar + columna): sin este flex-grow, la columna se encogía a
+   lo que pedían las etiquetas del formulario (mucho menos que el ancho
+   fijado) y el `width: 100%` de la burbuja de abajo terminaba resolviendo
+   contra ese ancho chico, no contra el real. */
+.mensaje-formulario .mensaje-columna {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mensaje-formulario .burbuja-formulario {
+  width: 100%;
+  background-color: #ffffff;
+  border: 2px solid var(--anh-borde-usuario);
+  color: var(--anh-texto);
+  border-radius: 14px 14px 4px 14px;
+  padding: 0;
+}
+/* El panel adentro de la burbuja no debe heredar el "llenar el alto
+   disponible + scroll propio" que necesita en su uso normal (paso1-5,
+   Ver estado montados directo en panel-rama-contenido): acá vive dentro de
+   una burbuja de ancho fijo, de alto natural. */
+.burbuja-formulario .panel-formulario {
+  overflow-y: visible;
+  padding: 14px;
+}
+.burbuja-formulario .panel-formulario input[type="text"],
+.burbuja-formulario .panel-formulario input[type="number"],
+.burbuja-formulario .panel-formulario select {
+  width: 100%;
+  box-sizing: border-box;
+}
+.avatar {
+  width: 30px;
+  height: 30px;
+  margin-top: 2px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.avatar-asistente {
+  background-color: var(--anh-naranja-fuerte);
+}
+.avatar-usuario {
+  background-color: var(--anh-verde);
+}
+.avatar-icono {
+  width: 16px;
+  height: 16px;
+}
+.caption {
+  align-self: flex-start;
+  font-size: 12px;
+  color: var(--anh-texto-secundario);
+  margin-left: 36px;
+}
+/* Compensa el `gap: 14px` de `.mensajes` cuando el caption sigue a un
+   mensaje (es una continuación del mismo turno, no uno nuevo) — deja un
+   espaciado equivalente al de `.mensaje .hora` (margin-top: 4px). */
+.mensaje + .caption {
+  margin-top: -10px;
+}
+/* Mismo color que .texto-error, para consistencia con el resto de la app. */
+.caption--error {
+  color: #b3261e;
+}
+
+/* --- Encabezado de paso (wizard "Registrar formulario") --- */
+.burbuja-paso {
+  position: relative;
+}
+.encabezado-paso {
+  margin-bottom: 2px;
+}
+.etiqueta-paso {
+  color: var(--anh-naranja-fuerte);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+.descripcion-paso {
+  margin: 2px 0 0;
+}
+/* Centrado verticalmente sobre el borde derecho de la burbuja, a mitad
+   adentro y mitad afuera (no en una esquina) — mismo criterio visual del
+   mockup: un botón "insignia" que sobresale del borde. */
+.boton-volver-paso {
+  position: absolute;
+  top: 50%;
+  right: -14px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid var(--anh-borde);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.boton-volver-paso:hover {
+  background: var(--anh-fondo);
+  border-color: var(--anh-borde-bot);
+}
+
+/* --- Input de chat --- */
+.chat-input {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--anh-borde);
+  background-color: var(--anh-fondo);
+}
+.chat-input input {
+  flex: 1 1 auto;
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 16px;
+  border: 1px solid var(--anh-borde);
+  border-radius: 999px;
+  background-color: #ffffff;
+  outline: none;
+}
+.chat-input input:focus {
+  border-color: var(--anh-verde);
+}
+.chat-input button {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background-color: #3f3f3a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* --- Paneles de formulario (registrar solicitud / ver estado) --- */
+.panel-formulario {
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.panel-formulario label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+.panel-formulario input[type="text"],
+.panel-formulario input[type="number"],
+.panel-formulario select,
+.panel-formulario textarea {
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--anh-borde);
+  border-radius: 8px;
+  background-color: #ffffff;
+  outline: none;
+}
+.panel-formulario select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6862' stroke-width='1.5' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 30px;
+}
+.panel-formulario input:focus,
+.panel-formulario select:focus,
+.panel-formulario textarea:focus {
+  border-color: var(--anh-verde);
+}
+.panel-formulario textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+.panel-formulario h3 {
+  margin: 0 0 4px 0;
+}
+.panel-formulario h2 {
+  margin: 8px 0;
+  color: var(--anh-verde);
+}
+/* Filas de texto plano (revisión de datos en paso 4, "Identidad verificada"
+   en otros contextos): sin el margen por defecto del navegador para <p>,
+   que se sumaba al `gap` del panel y dejaba espacios enormes entre filas. */
+.panel-formulario p {
+  margin: 0;
+}
+.panel-formulario .foto-previa {
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--anh-borde);
+  margin-top: 4px;
+  /* `.panel-formulario` es flex-column sin align-items propio (default:
+     stretch), así que sin esto la imagen se estira al ancho completo del
+     panel, desacoplada de max-height: la proporción real de la foto se
+     rompe. align-self:flex-start deja que se dimensione sola. */
+  align-self: flex-start;
+}
+/* Revisión de paso 4: los datos se agrupan (identidad / ubicación /
+   actividad-consumo), separados por una línea fina, en vez de una lista
+   plana — mismo espaciado interno (gap:4px) que el panel, para que las
+   filas de cada grupo no queden más separadas entre sí que las del resto
+   del formulario. */
+.grupo-revision {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.separador-revision {
+  border: none;
+  border-top: 1px solid var(--anh-borde);
+  margin: 4px 0;
+  width: 100%;
+}
+/* Selector de foto personalizado (paso 3): reemplaza el control nativo del
+   navegador por un botón propio + una tarjeta de confirmación una vez
+   elegido el archivo, siguiendo el mockup aprobado. El <input type="file">
+   real queda oculto (`hidden` en el HTML) y este botón lo dispara por
+   click(). */
+.fila-adjuntar-foto {
+  display: flex;
+  gap: 8px;
+}
+.boton-adjuntar-foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  padding: 12px;
+  border: 1.5px dashed var(--anh-borde);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--anh-verde);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.boton-adjuntar-foto:hover {
+  background-color: var(--anh-verde-claro);
+}
+.boton-adjuntar-foto svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+/* Botón de quitar la foto elegida (basurero): junto a "Adjuntar foto",
+   oculto hasta que hay un archivo seleccionado. */
+.boton-quitar-foto {
+  flex-shrink: 0;
+  width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--anh-borde);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--anh-texto-secundario);
+  cursor: pointer;
+}
+.boton-quitar-foto:hover {
+  background-color: var(--anh-fondo);
+  color: #b3261e;
+  border-color: #b3261e;
+}
+.boton-quitar-foto svg {
+  width: 16px;
+  height: 16px;
+}
+.boton-quitar-foto.oculto {
+  display: none;
+}
+.confirmacion-foto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 0 4px;
+  text-align: center;
+}
+.confirmacion-foto.oculto {
+  display: none;
+}
+.confirmacion-foto .icono-archivo {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background-color: var(--anh-borde);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.confirmacion-foto .icono-archivo svg {
+  width: 20px;
+  height: 20px;
+}
+.confirmacion-foto .icono-archivo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.confirmacion-foto .nombre-archivo {
+  font-weight: 600;
+  font-size: 13px;
+}
+.confirmacion-foto .tamano-archivo {
+  font-size: 12px;
+  color: var(--anh-texto-secundario);
+}
+.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 400;
+  margin-top: 14px;
+  cursor: pointer;
+}
+.checkbox input {
+  margin-top: 23px;
+}
+
+.boton-primario {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--anh-verde);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  margin-top: 16px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.boton-primario:disabled {
+  background-color: var(--anh-borde);
+  color: var(--anh-texto-secundario);
+  cursor: not-allowed;
+}
+/* Modificador para los botones de acción de paso 3 y paso 4 (mockup): ancho
+   completo en vez del tamaño-al-contenido por defecto de .boton-primario.
+   No se aplica a "Verificar identidad" (paso 1) ni "Continuar" (paso 2),
+   que siguen con el tamaño chico habitual. */
+.boton-ancho-completo {
+  align-self: stretch;
+  width: 100%;
+  text-align: center;
+}
+
+.texto-aviso {
+  color: var(--anh-naranja);
+  font-size: 13px;
+}
+.texto-error {
+  color: #b3261e;
+  font-size: 13px;
+}
+.texto-exito {
+  color: var(--anh-verde);
+  font-size: 13px;
+}
+
+/* --- Mobile --- */
+@media (max-width: 600px) {
+  .pagina {
+    padding: 0;
+  }
+  .tarjeta {
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  .header {
+    height: 80px;
+  }
+  .header .logo {
+    width: 96px;
+    height: auto;
+  }
+  .avatar {
+    width: 26px;
+    height: 26px;
+  }
+  .avatar-icono {
+    width: 14px;
+    height: 14px;
+  }
+  .mensaje-formulario .burbuja-formulario {
+    border-radius: 13px 13px 4px 13px;
+  }
+  .boton-reiniciar-nav {
+    width: 26px;
+    height: 26px;
+  }
+  .boton-reiniciar-nav svg {
+    width: 14px;
+    height: 14px;
+  }
+  .boton-volver-paso {
+    width: 26px;
+    height: 26px;
+    right: -13px;
+  }
+  .boton-volver-paso svg {
+    width: 12px;
+    height: 12px;
+  }
+  .header-textos h1 {
+    font-size: 18px;
+  }
+  .nav {
+    padding: 2px 12px 10px;
+  }
+  .nav-item {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+}

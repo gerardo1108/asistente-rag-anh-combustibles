@@ -1,0 +1,87 @@
+[
+  {
+    "pregunta": "¿Cuántos litros puedo comprar en bidones en zona fronteriza al mes?",
+    "norma_esperada": "Decreto Supremo N° 5400",
+    "articulo_esperado": "Artículo 16 del DS N° 28511 (modificado por el DS N° 5400) — Formulario Electrónico y límites de volumen"
+  },
+  {
+    "pregunta": "¿Hasta cuántos litros de diésel puedo comprar en bidones en el resto del territorio nacional?",
+    "norma_esperada": "Decreto Supremo N° 5400",
+    "articulo_esperado": "Artículo 16 del DS N° 28511 (modificado por el DS N° 5400) — Formulario Electrónico y límites de volumen"
+  },
+  {
+    "pregunta": "¿Qué información debo declarar en el Formulario Electrónico de la ANH?",
+    "norma_esperada": "RAN-ANH-DJ-UGJN N° 0008/2025",
+    "articulo_esperado": "Artículo 4 — Registro en el Formulario Electrónico"
+  },
+  {
+    "pregunta": "¿Qué es el Formulario Electrónico según el reglamento de la ANH?",
+    "norma_esperada": "RAN-ANH-DJ-UGJN N° 0008/2025",
+    "articulo_esperado": "Artículo 3 — Definiciones"
+  },
+  {
+    "pregunta": "Si no lleno el formulario electrónico, ¿puedo igual comprar combustible en bidones presentando mi cédula de identidad?",
+    "norma_esperada": "RAN-ANH-DJ-UGJN N° 0008/2025",
+    "articulo_esperado": "Artículo 5 — Adquisición de combustibles sin Formulario Electrónico"
+  },
+  {
+    "pregunta": "¿Qué pasa si doy información falsa en el formulario de registro de consumo de combustibles?",
+    "norma_esperada": "RAN-ANH-DJ-UGJN N° 0008/2025",
+    "articulo_esperado": "Advertencias legales (Declaración Jurada)"
+  },
+  {
+    "pregunta": "¿A quién se aplica el reglamento de registro de consumidores de combustibles en bidones?",
+    "norma_esperada": "RAN-ANH-DJ-UGJN N° 0008/2025",
+    "articulo_esperado": "Artículo 2 — Alcance"
+  },
+  {
+    "pregunta": "¿Puedo hacer el registro del Formulario Electrónico desde mi celular en mi casa o me lo tienen que hacer en la estación de servicio?",
+    "norma_esperada": "RAN-ANH-DJ-UGJN N° 0008/2025",
+    "articulo_esperado": "Cómo se hace el registro en el Formulario Electrónico"
+  },
+  {
+    "pregunta": "¿Qué documentos necesito para pre-registrarme en Ciudadanía Digital?",
+    "norma_esperada": "Resolución Administrativa AGETIC/RA/0027/2026",
+    "articulo_esperado": "Requisitos para el pre-registro"
+  },
+  {
+    "pregunta": "¿Cuántas fotos debo subir de mi cédula de identidad para el pre-registro de Ciudadanía Digital?",
+    "norma_esperada": "Resolución Administrativa AGETIC/RA/0027/2026",
+    "articulo_esperado": "Fotografías requeridas para el pre-registro"
+  },
+  {
+    "pregunta": "¿Cuánto tiempo tengo para finalizar mi pre-registro en Ciudadanía Digital antes de que se anule?",
+    "norma_esperada": "Resolución Administrativa AGETIC/RA/0027/2026",
+    "articulo_esperado": "Plazos del pre-registro y de la revalidación de credenciales"
+  },
+  {
+    "pregunta": "¿Cómo puedo contactar a soporte técnico de Ciudadanía Digital?",
+    "norma_esperada": "Resolución Administrativa AGETIC/RA/0027/2026",
+    "articulo_esperado": "Canales de atención y soporte"
+  },
+  {
+    "pregunta": "¿Cuáles son los tipos de registro que existen en Ciudadanía Digital?",
+    "norma_esperada": "Resolución Administrativa AGETIC/RA/0027/2026",
+    "articulo_esperado": "Tipos de registro: virtual y presencial"
+  },
+  {
+    "pregunta": "¿Qué significa ANH?",
+    "norma_esperada": "Glosario de siglas y abreviaciones (elaboración propia)",
+    "articulo_esperado": "ANH"
+  },
+  {
+    "pregunta": "¿Qué es CD?",
+    "norma_esperada": "Glosario de siglas y abreviaciones (elaboración propia)",
+    "articulo_esperado": "CD"
+  },
+  {
+    "pregunta": "¿Qué actividades puedo seleccionar en el formulario?",
+    "norma_esperada": "Catálogo de actividades del formulario (elaboración propia)",
+    "articulo_esperado": "Actividades declarables en el formulario"
+  },
+  {
+    "pregunta": "Mi actividad es la pesca, ¿igual puedo hacer el trámite?",
+    "norma_esperada": "Catálogo de actividades del formulario (elaboración propia)",
+    "articulo_esperado": "Alcance del trámite sin importar la actividad"
+  }
+]
