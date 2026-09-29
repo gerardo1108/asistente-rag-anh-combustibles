@@ -680,6 +680,7 @@ function agregarPaso4() {
         Declaro que la información proporcionada es verídica y asumo responsabilidad por su veracidad,
         conforme a la normativa vigente.
       </label>
+      <button type="button" id="boton-volver-paso4" class="boton-volver-paso" aria-label="Volver al paso anterior">← <span>Volver</span></button>
       <button id="boton-enviar" class="boton-primario boton-ancho-completo" disabled>Confirmar y enviar</button>
       <div id="mensaje-paso4"></div>
     </div>
@@ -691,6 +692,7 @@ function agregarPaso4() {
   irAlFinal();
 
   const checkbox = nodo.querySelector("#input-jurada");
+  nodo.querySelector("#boton-volver-paso4").addEventListener("click", () => volverAPaso(3));
   const boton = nodo.querySelector("#boton-enviar");
   checkbox.addEventListener("change", () => {
     boton.disabled = !checkbox.checked;
