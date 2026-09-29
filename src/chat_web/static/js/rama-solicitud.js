@@ -680,7 +680,7 @@ function agregarPaso4() {
         Declaro que la información proporcionada es verídica y asumo responsabilidad por su veracidad,
         conforme a la normativa vigente.
       </label>
-      <button type="button" id="boton-volver-paso4" class="boton-volver-paso" aria-label="Volver al paso anterior">← <span>Volver</span></button>
+      <button type="button" id="boton-volver-paso4" class="boton-volver-paso boton-ancho-completo" aria-label="Volver al paso anterior">← <span>Volver</span></button>
       <button id="boton-enviar" class="boton-primario boton-ancho-completo" disabled>Confirmar y enviar</button>
       <div id="mensaje-paso4"></div>
     </div>
